@@ -1,12 +1,16 @@
 # SillyTavern DSH 扩展包（v0.3）
 
+[![Release](https://img.shields.io/github/v/release/SuperJufufu/sillytavern-dsh-pack?color=blue)](https://github.com/SuperJufufu/sillytavern-dsh-pack/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![CI](https://github.com/SuperJufufu/sillytavern-dsh-pack/actions/workflows/ci.yml/badge.svg)](https://github.com/SuperJufufu/sillytavern-dsh-pack/actions/workflows/ci.yml)
+
 > 一组给 **SillyTavern 1.19.x** 用的自研前端扩展（13 个）+ 可选 AGPL 补丁。
 > **不包含** SillyTavern 本体源码、不包含任何用户数据（聊天 / 角色卡 / 世界书 / 图片 / 密钥），
 > **也不包含成人向内容**。请在符合当地法律与 GitHub 政策的前提下使用/分发。
 
 ## 一键安装（推荐）
 
-1. 到 **Releases** 下载 `SillyTavern-DSH-Pack-Setup-v0.3.0.cmd`（约 600 KB）；
+1. 到 **[Releases](https://github.com/SuperJufufu/sillytavern-dsh-pack/releases)** 下载 `SillyTavern-DSH-Pack-Setup-v0.3.0.cmd`（约 600 KB）；
 2. **双击**运行（「Windows 已保护你的电脑」→ 更多信息 → 仍要运行）；
 3. 安装器自动：
    - **检测本机是否已有 SillyTavern 1.19.0**：有就跳过下载本体；
