@@ -69,6 +69,7 @@
 | ![scene](docs/showcase/scene.jpg) | ![closeup](docs/showcase/closeup.jpg) | ![avatar](docs/showcase/avatar.jpg) |
 
 - 本例使用 `dsh-swipe-shots`：每条 AI 回复后自动出 2 张不同角度的图，并隐藏系统图片消息里的提示词文字。
+- **角色绑定**：演示图使用固定角色设定（银发主角 A + 黑发同伴 B），`scene` / `closeup` / `avatar` 保持同一角色，避免跨图人物不一致（详见 [docs/showcase/README.md](docs/showcase/README.md)）。
 - 生图后端**可选**：本地 ComfyUI（SDXL / 其它模型）、云端图片 API、或其它本地服务，见 [docs/IMAGE-BACKENDS.md](docs/IMAGE-BACKENDS.md)。
 
 ## 生图后端（可选 / 可替换）
