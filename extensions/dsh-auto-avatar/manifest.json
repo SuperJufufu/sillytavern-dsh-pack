@@ -1,0 +1,12 @@
+{
+    "name": "dsh-auto-avatar",
+    "display_name": "自动画头像（SDXL）",
+    "version": "1.0.1",
+    "description": "新会话第一轮自动给正文里最先出现的角色画头像并替换角色卡头像（旧图备份到 user/files）；可选给当前 persona 画头像（默认关）。走 ComfyUI 桥接 + dsh-gpu-queue 单通道，提示词优先用面板配置的世界书里的【SD标签】，未配置世界书时只用角色卡描述。删掉本文件夹即可移除。",
+    "author": "DSH",
+    "loading_order": 260,
+    "requires": [],
+    "optional": [],
+    "js": "index.js",
+    "css": ""
+}

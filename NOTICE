@@ -1,0 +1,34 @@
+# NOTICE
+
+本仓库（SillyTavern DSH 扩展包）是独立的第三方扩展集合，与 SillyTavern 官方项目无隶属关系。
+
+## SillyTavern
+
+- 项目：SillyTavern — https://github.com/SillyTavern/SillyTavern
+- 许可证：**AGPL-3.0**
+- 说明：本仓库**不包含** SillyTavern 的源代码，只包含运行在其前端扩展机制之上的独立扩展。
+  使用本仓库需要自行安装 SillyTavern，并遵守其 AGPL-3.0 许可证。
+
+## 补丁（v0.3 起提供）
+
+`patches/` 下的补丁脚本会修改 SillyTavern 1.19.x 的源码（Stable Diffusion 扩展、`src/util.js` 等），
+属于对 AGPL-3.0 作品的修改，因此这些脚本与生成物以 **AGPL-3.0** 发布（全文见 `patches/LICENSE-AGPL-3.0`）。
+扩展本身（`extensions/`）仍是 MIT；两者边界清晰。
+
+## 第三方扩展（不打包，仅引用）
+
+| 名称 | 上游 | 许可证 |
+|---|---|---|
+| 酒馆助手（JS-Slash-Runner） | https://github.com/N0VI028/JS-Slash-Runner | PolyForm Noncommercial 1.0.0 |
+| 角色卡自动更新（AutoCardUpdaterExtension） | https://github.com/1830488003/AutoCardUpdaterExtension | MIT（README 声明） |
+| 记忆增强表格（st-memory-enhancement） | https://gitee.com/muyoou/st-memory-enhancement | 未声明（按"保留所有权利"处理，不打包） |
+
+## 内容声明
+
+- 本仓库不包含任何用户数据：无聊天记录、角色卡、世界书、生成图片、API 密钥、个人路径。
+- 本仓库不含成人向内容。
+
+## 本仓库扩展的许可证
+
+除非文件内另有说明，`extensions/` 下的代码为 **MIT**（见仓库根目录 `LICENSE`），
+版权归 DSH 贡献者所有。

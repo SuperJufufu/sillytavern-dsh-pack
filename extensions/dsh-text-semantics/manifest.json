@@ -1,0 +1,12 @@
+{
+    "name": "dsh-text-semantics",
+    "display_name": "DSH 文本语义配色",
+    "version": "1.1.0",
+    "description": "按含义区分聊天正文（V1 鲜艳五色）：斜体=环境叙述（暖金）、对白=亮橙、加粗=内心（亮紫）、下划线=动作（亮青）、等宽=系统标记（亮蓝）；行高 1.8、正文 15px。纯显示层，不改聊天文件内容；关闭本扩展即可整体还原。",
+    "author": "DSH",
+    "loading_order": 997,
+    "requires": [],
+    "optional": [],
+    "js": "index.js",
+    "css": "style.css"
+}

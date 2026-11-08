@@ -1,0 +1,12 @@
+{
+    "name": "chat-namer",
+    "display_name": "对话自动命名（DeepSeek）",
+    "version": "2.1.0",
+    "description": "用 DeepSeek（ST 主模型 API）自动给对话起中文标题并重命名；对话早期命名一次，之后每 5 轮自动更新标题。手动改过名的不再自动更新；本地 1.5B 兜底。删掉本文件夹即可移除。",
+    "author": "DSH",
+    "loading_order": 250,
+    "requires": [],
+    "optional": [],
+    "js": "index.js",
+    "css": ""
+}

@@ -1,0 +1,12 @@
+{
+    "name": "dsh-model-config",
+    "display_name": "DSH 本地模型配置",
+    "version": "1.0.1",
+    "description": "把「记忆增强表格」和「角色卡自动更新」的 LLM 统一配置到本地 Ollama 的 gemma4-e4b；自动把 Ollama 请求的思考模式关掉（reasoning_effort=none），避免模型把输出全花在 thinking 里。删掉本文件夹即可移除（不会清掉已写入的设置）。 ；v1.0.1：不再在页面加载时主动保存设置（避免多扩展同时保存导致 Settings could not be saved）。",
+    "author": "DSH",
+    "loading_order": 5,
+    "requires": [],
+    "optional": [],
+    "js": "index.js",
+    "css": ""
+}

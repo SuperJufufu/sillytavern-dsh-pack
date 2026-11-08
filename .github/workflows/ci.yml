@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Scan sensitive content
+        run: node scripts/scan-sensitive.mjs
+
+      - name: Syntax check extension scripts
+        run: |
+          set -e
+          for f in extensions/*/index.js; do
+            node --check "$f"
+          done
+          node --check tools/build-installer.mjs
+
+      - name: Build installer
+        run: node tools/build-installer.mjs --out dist/SillyTavern-DSH-Pack-Setup-ci.cmd
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer
+          path: dist/SillyTavern-DSH-Pack-Setup-ci.cmd
+          if-no-files-found: error

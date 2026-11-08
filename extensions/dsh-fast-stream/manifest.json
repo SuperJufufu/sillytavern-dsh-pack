@@ -1,0 +1,12 @@
+{
+    "name": "dsh-fast-stream",
+    "display_name": "DSH 流式加速",
+    "version": "1.0.0",
+    "description": "强制关闭 SillyTavern 的 Smooth Streaming（平滑流式输出）并把刷新率拉到 100：平滑流式会给每个 token 加 delay，是真的会限速。删掉本文件夹即可恢复原设置。",
+    "author": "DSH",
+    "loading_order": 999,
+    "requires": [],
+    "optional": [],
+    "js": "index.js",
+    "css": ""
+}

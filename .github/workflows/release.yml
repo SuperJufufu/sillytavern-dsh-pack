@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g. v0.3.0)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Resolve version
+        id: version
+        run: |
+          set -e
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            RAW="${{ github.event.inputs.tag }}"
+          else
+            RAW="${GITHUB_REF_NAME}"
+          fi
+          VER="${RAW#v}"
+          echo "raw=$RAW" >> "$GITHUB_OUTPUT"
+          echo "version=$VER" >> "$GITHUB_OUTPUT"
+          echo "Resolved $RAW -> $VER"
+
+      - name: Scan sensitive content
+        run: node scripts/scan-sensitive.mjs
+
+      - name: Build installer
+        run: node tools/build-installer.mjs --version "${{ steps.version.outputs.version }}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer
+          path: dist/SillyTavern-DSH-Pack-Setup-v*.cmd
+          if-no-files-found: error
+
+      - name: Create or update release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.raw }}
+          name: SillyTavern DSH Pack ${{ steps.version.outputs.raw }}
+          draft: false
+          generate_release_notes: true
+          files: dist/SillyTavern-DSH-Pack-Setup-v*.cmd

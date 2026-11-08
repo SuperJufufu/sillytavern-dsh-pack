@@ -1,0 +1,16 @@
+{
+    "name":  "ui-simplify",
+    "display_name":  "界面精简",
+    "version":  "2.4.0",
+    "description":  "聊天/首页内容区 95vw（左右边界再各让出 2.5vw），右侧面板展开时 76vw；左侧图标按钮；右侧折叠按钮；首页隐藏对话类按钮；防自动跳底。",
+    "author":  "DSH",
+    "loading_order":  200,
+    "requires":  [
+
+                 ],
+    "optional":  [
+
+                 ],
+    "js":  "index.js",
+    "css":  ""
+}

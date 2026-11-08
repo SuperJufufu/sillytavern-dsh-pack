@@ -1,0 +1,12 @@
+{
+    "name": "dsh-swipe-shots",
+    "display_name": "DSH 角度配图",
+    "version": "1.1.0",
+    "description": "每条 AI 回复结束后，按该条内容生成 2 张不同角度的配图（一张场景另一视角 + 一张人物近景特写），并隐藏聊天里系统生成图消息中的提示词文字。v1.1.0 起已移除「每条回复自动再生成第 2 条候选 / 自动滑动选择器」功能；手动在 ST 里滑到另一条回复时会按新回复重出角度图。设置在本扩展面板里。",
+    "author": "DSH",
+    "loading_order": 997,
+    "requires": [],
+    "optional": [],
+    "js": "index.js",
+    "css": ""
+}

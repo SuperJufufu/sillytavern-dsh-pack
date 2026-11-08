@@ -1,0 +1,12 @@
+{
+    "name": "dsh-gen-guard",
+    "display_name": "DSH 生成看门狗",
+    "version": "1.1.1",
+    "description": "检测「生成中」状态卡死（如生图/扩展挂起后 UI 不解除），自动解锁并把诊断写进聊天元数据；另提供 sdBusy() 给图片折叠扩展做重绘排队。删掉本文件夹即可移除。",
+    "author": "DSH",
+    "loading_order": 250,
+    "requires": [],
+    "optional": [],
+    "js": "index.js",
+    "css": ""
+}

@@ -1,0 +1,84 @@
+/*
+ * DSH 文本语义配色 · V1「鲜艳五色」（2026-10-31 用户要求：更鲜艳、显眼）
+ * ------------------------------------------------------------------
+ * 五类内容（由 ST 正则扩展在显示层包标签，见 apply_text_semantics.js）：
+ *   斜体   = 环境叙述   <em> / <i>                    → 暖金   #EBD39A
+ *   普通   = 对白       <q>（"…" “…” 「…」 等都会转）  → 亮橙   #FF9F2E
+ *   加粗   = 内心想法   <strong>（{…} 由正则包）       → 亮紫   #D6A8FF
+ *   下划线 = 括注动作   <u>（（…）由正则包）           → 亮青   #66E6C4
+ *   等宽   = 系统标记   <span class="monospace">（【…】）→ 亮蓝  #8FC8F5
+ *
+ * 排版：正文 15px、行高 1.8（宽一些，长段落不挤）
+ * 只覆盖聊天正文；不改主题文件、不改正文内容，整个扩展可一键关闭。
+ * 想回到柔和版：把 :root 里五个变量换回 #D8D2C2 / #E58A24 / #C9B6E8 / #9BD6C4 / #93A6B8。
+ */
+
+:root {
+    --dsh-narr: #EBD39A;
+    --dsh-quote: #FF9F2E;
+    --dsh-thought: #D6A8FF;
+    --dsh-action: #66E6C4;
+    --dsh-system: #8FC8F5;
+}
+
+/* ---------- 排版：行高 + 字号 ---------- */
+#chat .mes_text,
+#chat .mes_text p,
+#chat .mes_text li,
+#chat .mes_text blockquote,
+#chat .mes_reasoning,
+#chat .mes_reasoning p {
+    line-height: 1.8 !important;
+}
+
+#chat .mes_text {
+    font-size: 15px !important;
+}
+
+/* ---------- 颜色：五种含义（V1 鲜艳版） ---------- */
+#chat .mes_text em,
+#chat .mes_text i {
+    color: var(--dsh-narr) !important;
+}
+
+#chat .mes_text q {
+    color: var(--dsh-quote) !important;
+    text-shadow: 0 0 6px rgba(255, 159, 46, 0.18);
+}
+
+#chat .mes_text strong {
+    color: var(--dsh-thought) !important;
+    font-weight: 700;
+}
+
+#chat .mes_text u {
+    color: var(--dsh-action) !important;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+}
+
+#chat .mes_text .monospace {
+    color: var(--dsh-system) !important;
+    font-size: 0.93em;
+    letter-spacing: 0.03em;
+}
+
+/* ---------- 嵌套时跟随外层颜色，避免一格里三种颜色打架 ---------- */
+#chat .mes_text q em,
+#chat .mes_text q i,
+#chat .mes_text q strong,
+#chat .mes_text q u,
+#chat .mes_text q .monospace,
+#chat .mes_text strong em,
+#chat .mes_text strong i,
+#chat .mes_text strong u,
+#chat .mes_text strong .monospace,
+#chat .mes_text em strong,
+#chat .mes_text em u,
+#chat .mes_text em .monospace,
+#chat .mes_text u em,
+#chat .mes_text u i,
+#chat .mes_text u strong,
+#chat .mes_text u .monospace {
+    color: inherit !important;
+}

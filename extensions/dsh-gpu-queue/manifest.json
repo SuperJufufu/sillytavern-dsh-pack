@@ -1,0 +1,12 @@
+{
+    "name": "dsh-gpu-queue",
+    "display_name": "DSH 重任务排队",
+    "version": "1.0.0",
+    "description": "让「生图（SDXL）」和「Qwen 背景图」以及本地 gemma（记忆填表/角色卡更新）这三个重任务排队执行，任意两个不会同时跑；小模型（minicpm / 1.5B 检测）不受影响。删掉本文件夹即可移除。",
+    "author": "DSH",
+    "loading_order": 1,
+    "requires": [],
+    "optional": [],
+    "js": "index.js",
+    "css": ""
+}
