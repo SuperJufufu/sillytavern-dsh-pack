@@ -60,7 +60,7 @@
 ## 9. chat-namer（对话自动命名（DeepSeek））v2.1.0
 
 - **作用**：用 ST 当前模型给对话起中文标题；打开旧对话补命名，之后每 5 轮更新；手改过的不再自动改；本地小模型兜底。
-- **默认**：`engine: main`、`updateEveryN: 5`、`maxChars: 18`；本地兜底 `http://127.0.0.1:8030` + `qwen2.5-1.5b`。
+- **默认**：`engine: main`、`updateEveryN: 5`、`maxChars: 18`；本地兜底 `http://127.0.0.1:8030` + `qwen3-1.7b`。
 - **注意**：标题过滤（拒绝含性词汇的标题）是防御性逻辑，不是成人内容。
 
 ## 10. dsh-chat-thumbs（聊天列表（封面 + 预览））v1.3.1
@@ -85,11 +85,12 @@
   ComfyUI 桥接地址常量 `DEFAULT_COMFY_URL`。
 - **依赖**：`patches/sd-angle`（或 SD 出图链路）+ ComfyUI。
 
-## 13. qwen-bg（背景图（先判断场景，变了才换））v3.4.1
+## 13. qwen-bg（背景图（先判断场景，变了才换））v3.4.2
 
 - **作用**：每条回复后判断场景是否变化（ST 主模型，本地小模型可兜底），变了才生成新背景；
   每段聊天单独记住场景/背景；角色图出图时背景排队；换新背景后删除被替换的旧背景（别处在用则保留）；可设主页固定背景。
-- **v3.4.1 公开版配置**：`DEFAULT_COMFY_URL` / `DEFAULT_DETECTOR_URL` 常量（面板可覆盖）；
+- **v3.4.2 公开版配置**：`DEFAULT_COMFY_URL` / `DEFAULT_DETECTOR_URL` 常量（面板可覆盖）；
+- **v3.4.2 判断质量**：prompt 增加两条 RULE（changed=true 必须写新地点、changed=false 沿用旧词）+ 示例改成互不相同的两个场景，防止小模型照抄示例；实测把「场景关键词正确更新率」从 1/5 提到 4/5（qwen3-1.7b）
   `homeBg` 默认空、`homeBgEnabled` 默认关（需自己选图）；不再带任何成人词表清洗。
 - **依赖**：ComfyUI（8188/8189）+ 可选本地判断模型（8030）。
 

@@ -27,7 +27,7 @@
         enabled: true,
         engine: 'main',            // main = DeepSeek（generateRaw）| local = 8030 本地 1.5B | auto = 主模型优先，失败用本地
         url: 'http://127.0.0.1:8030',
-        model: 'qwen2.5-1.5b',
+        model: 'qwen3-1.7b',
         maxChars: 18,
         minAiMessages: 1,
         maxAiMessages: 6,
