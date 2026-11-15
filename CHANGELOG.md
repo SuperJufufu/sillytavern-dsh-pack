@@ -1,20 +1,14 @@
 # Changelog
 
-## v0.3.1 — 2026-11-08
+## 未发布 — 2026-11-16
 
-### qwen-bg v3.4.2：场景判断质量 + 本地小模型升级
+### 开屏安全（首次启动无图片）
 
-- **修 prompt**：原来 `changed=true` 和 `changed=false` 两条示例用的**一模一样的 scene**，等于在教模型「不管换没换场景都照抄旧关键词」。
-  现在加了两条 RULE（`changed=true` 必须写新地点、`changed=false` 才沿用旧词），示例换成两个互不相同的场景，并加一句「不要照抄示例关键词」。
-- **换本地兜底模型**：`qwen2.5-1.5b` → `qwen3-1.7b-instruct Q4_K_M`，18 题对照实测：
-  | 指标 | qwen3.5-0.8b | **qwen3-1.7b** | qwen2.5-1.5b（旧） |
-  |---|---|---|---|
-  | 场景变化判断正确 | 8/10 | **9/10** | 8/10 |
-  | 关键词正确更新（改场景后真的写新地点） | 2/5 | **4/5** | 1/5 |
-  | 平均延迟 | 0.12s | **0.09s** | 0.10s |
-  | 命名扩展约束达标（6–14 字/无标点/无违禁词） | 10/18 | 6/18（偏短） | 6/18（爱加斜杠分段） |
-- ⚠ **接 qwen3 系必须关 thinking**：llama-server 加 `-rea off`，否则默认先吐思考链，JSON 会被写脏、延迟翻几倍。
-- `chat-namer` 的本地兜底模型 id 同步改成 `qwen3-1.7b`（仅标签，llama-server 不校验）。
+- 新增 `scripts/check-no-images-in-payload.mjs`：校验安装包 payload（extensions/patches/installer）不含任何图片文件，CI 强制 PASS。
+- 新增 `scripts/check-first-run-safe.mjs`：对着 ST 目录复查默认欢迎模板、默认 settings、默认背景与主题，确认开屏无背景图。
+- 新增 `docs/FIRST-RUN-SAFE.md` 与 `docs/showcase/first-run-splash.png`、`docs/showcase/first-run.png`（ST 1.19.0 + 全新 dataRoot 实测截图）。
+- README 增加「首次启动（开屏）没有图片」说明与自查命令。
+- 扩展与安装器版本不变（本条目只涉及校验脚本与文档）。
 
 ## v0.3 — 2026-11-08
 

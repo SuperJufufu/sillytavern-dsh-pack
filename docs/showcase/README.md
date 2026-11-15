@@ -21,6 +21,8 @@
 | `scene.jpg` | 自动生成：两人广角/场景图（A + B） |
 | `closeup.jpg` | 自动生成：主角 A 近景（与 scene 同一角色） |
 | `avatar.jpg` | 自动生成：主角 A 头像（同一角色） |
+| `first-run-splash.png` | ST 1.19.0 启动 splash 实测：深色 + ST logo，无图片 |
+| `first-run.png` | ST 1.19.0 首次欢迎弹窗实测：无背景图 / 无色图 |
 
 ## 可复现性
 

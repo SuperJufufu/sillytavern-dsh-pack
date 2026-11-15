@@ -72,6 +72,21 @@
 - **角色绑定**：演示图使用固定角色设定（银发主角 A + 黑发同伴 B），`scene` / `closeup` / `avatar` 保持同一角色，避免跨图人物不一致（详见 [docs/showcase/README.md](docs/showcase/README.md)）。
 - 生图后端**可选**：本地 ComfyUI（SDXL / 其它模型）、云端图片 API、或其它本地服务，见 [docs/IMAGE-BACKENDS.md](docs/IMAGE-BACKENDS.md)。
 
+## 首次启动（开屏）没有图片
+
+整合包**不打包任何图片资源**（只分发扩展脚本 / 补丁 / 安装器，由 `scripts/check-no-images-in-payload.mjs` 校验）。
+安装的 ST 1.19.0 首次启动默认背景是透明的（`backgrounds/__transparent.png`），所以开屏是深色界面
++ ST logo + 欢迎弹窗，**没有背景图、没有色图**：
+
+| 启动 splash | 首次欢迎弹窗 |
+|---|---|
+| ![splash](docs/showcase/first-run-splash.png) | ![first-run](docs/showcase/first-run.png) |
+
+- 仓库 `docs/showcase/` 里的演示图只用于 README 展示，**不会被安装到 ST**。
+- ST 官方自带的默认角色卡 / 表情图（SFW），在角色列表出现、**不在开屏上**；不需要时删除即可。
+- 安装器检测到已有 ST 时只装扩展 + 补丁，**不修改**你的背景、角色、聊天数据。
+- 复查：`node scripts/check-first-run-safe.mjs --st "<SillyTavern>"`；细节见 [docs/FIRST-RUN-SAFE.md](docs/FIRST-RUN-SAFE.md)。
+
 ## 生图后端（可选 / 可替换）
 
 - **默认**：ST 内置 Stable Diffusion 扩展 + ComfyUI（SDXL）；`patches/` 全部可选，安装器 `--no-patches` 可跳过。
@@ -106,7 +121,7 @@
 | `dsh-chat-thumbs` | 聊天列表（封面 + 预览） | 1.3.1 | 欢迎页聊天列表用场景插画当封面 + 预览清洗/标题整理 | 无（map.json 运行时生成） |
 | `dsh-prompt-stable` | DSH 写词稳定器 | 1.2.0 | 条件宏模板 + 全局外观核心标签 + 缓存 + 规则兜底 + 思考折叠 | 补丁（SD 写词钩子） |
 | `dsh-auto-avatar` | 自动画头像（SDXL） | 1.0.1 | 第一轮自动给首个角色画头像（可选 persona 头像） | 补丁 + ComfyUI |
-| `qwen-bg` | 背景图（先判断场景，变了才换） | 3.4.2 | 场景判断 → 出背景 → 换图/清理旧图；主页固定背景 | 补丁 + ComfyUI + 可选本地判断模型 |
+| `qwen-bg` | 背景图（先判断场景，变了才换） | 3.4.1 | 场景判断 → 出背景 → 换图/清理旧图；主页固定背景 | 补丁 + ComfyUI + 可选本地判断模型 |
 
 ## 依赖与配置
 
@@ -150,6 +165,8 @@ node patches/apply.mjs --st "<SillyTavern>"
 - SillyTavern 本体：AGPL-3.0，本仓库不含其源码。
 - 第三方归属见 `NOTICE`。
 - 发布前自查：`node scripts/scan-sensitive.mjs`（要求 PASS）。
+- 开屏/安装包自查：`node scripts/check-no-images-in-payload.mjs`（安装包不含图片）+
+  `node scripts/check-first-run-safe.mjs --st "<SillyTavern>"`（首次启动无背景图），均要求 PASS。
 - 发布使用**全新 Git 历史**，不要从旧目录 push。
 
 ## 构建 / CI
@@ -171,9 +188,9 @@ sillytavern-dsh-pack/
 ├── patches/                 # ST 补丁脚本（AGPL-3.0）+ apply.mjs
 ├── installer/               # 安装器源码（bootstrap.cmd + install.ps1）
 ├── tools/build-installer.mjs
-├── docs/EXTENSIONS.md / IMAGE-BACKENDS.md / showcase/
+├── docs/EXTENSIONS.md / IMAGE-BACKENDS.md / FIRST-RUN-SAFE.md / showcase/
 ├── examples/                # 可选后端替换示例（不随安装包分发）
-├── scripts/scan-sensitive.mjs
+├── scripts/                 # scan-sensitive.mjs / check-no-images-in-payload.mjs / check-first-run-safe.mjs
 ├── .github/workflows/       # CI + Release
 └── dist/                    # 构建产物（不提交）
 ```
