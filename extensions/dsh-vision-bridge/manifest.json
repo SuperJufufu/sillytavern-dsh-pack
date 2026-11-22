@@ -1,0 +1,11 @@
+{
+    "display_name": "视觉读图（图片自动描述给文本模型）",
+    "name": "dsh-vision-bridge",
+    "version": "1.0.0",
+    "author": "DSH",
+    "description": "发送图片时先用视觉模型读图，把客观描述附在用户消息里，再交给当前文本模型回复。可开关、可改视觉模型。",
+    "js": "index.js",
+    "css": "style.css",
+    "loading_order": 120,
+    "generate_interceptor": "DSH_Vision_Bridge_Interceptor"
+}
