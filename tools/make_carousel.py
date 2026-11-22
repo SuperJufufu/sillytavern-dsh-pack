@@ -73,15 +73,17 @@ def base_canvas():
     img.alpha_composite(glow.filter(ImageFilter.GaussianBlur(120)))
     return img
 
-def caption(img, idx, title, sub):
+def caption(img, idx, title, en, sub, sub_en):
     d = ImageDraw.Draw(img)
-    d.text((70, 856), f"{idx:02d} / 05", font=font(F_MONO, 26), fill=ACCENT)
-    d.text((70, 892), title, font=font(F_BOLD, 44), fill=TEXT)
-    d.text((72, 950), sub, font=font(F_REG, 24), fill=MUTED)
+    d.text((70, 816), f"{idx:02d} / 05", font=font(F_MONO, 24), fill=ACCENT)
+    d.text((70, 846), title, font=font(F_BOLD, 42), fill=TEXT)
+    d.text((70, 896), en, font=font(F_BOLD, 24), fill=ACCENT)
+    d.text((72, 930), sub, font=font(F_REG, 21), fill=MUTED)
+    d.text((72, 958), sub_en, font=font(F_REG, 18), fill=(120,130,148))
 
 def frame1():
     img = base_canvas()
-    box = (120, 70, 1480, 820)
+    box = (120, 60, 1480, 800)
     inner = window(img, box, "SillyTavern  ·  对话时自动生图")
     w, h = inner[2]-inner[0], inner[3]-inner[1]
     raw = Image.open(os.path.join(SHOW,"demo-chat.png")).convert("RGB").crop((0, 60, 1280, 900))
@@ -90,12 +92,12 @@ def frame1():
     ox = inner[0] + (w-shot.width)//2; oy = inner[1] + (h-shot.height)//2
     img.paste(shot, (ox, oy))
     badge(img, (inner[0]+18, inner[1]+18), "每轮回复自动配 scene + closeup", ACCENT)
-    caption(img, 1, "对话时自动生图", "回复一结束，两张不同角度的插图自动出现，提示词不露在聊天里。")
+    caption(img, 1, "对话时自动生图", "In-chat illustrations", "回复一结束，两张不同角度的插图自动出现，提示词不露在聊天里。", "A wide scene and a close-up appear after each reply; prompt text stays hidden.")
     return img
 
 def frame2():
     img = base_canvas()
-    box = (120, 70, 1480, 820)
+    box = (120, 60, 1480, 800)
     inner = window(img, box, "SillyTavern  ·  角色卡")
     d = ImageDraw.Draw(img)
     av = Image.open(os.path.join(SHOW,"avatar.jpg")).convert("RGB")
@@ -111,12 +113,12 @@ def frame2():
         d.text((inner[0]+442,y+17),k,font=font(F_REG,22),fill=MUTED)
         d.text((inner[0]+560,y+17),v,font=font(F_BOLD,22),fill=TEXT)
     badge(img,(inner[0]+420, inner[1]+540), "新头像写入角色卡，旧图自动备份", GOLD)
-    caption(img, 2, "角色卡自动更新", "生成的形象直接替换角色卡头像，跨聊天保持一致。")
+    caption(img, 2, "角色卡自动更新", "Character-card avatars", "生成的形象直接替换角色卡头像，跨聊天保持一致。", "The generated portrait replaces the card avatar; old ones are backed up and the character stays consistent.")
     return img
 
 def frame3():
     img = base_canvas()
-    box = (120, 70, 1480, 820)
+    box = (120, 60, 1480, 800)
     inner = window(img, box, "SillyTavern  ·  自动生成背景")
     w, h = inner[2]-inner[0], inner[3]-inner[1]
     bg = fit(Image.open(os.path.join(SHOW,"scene.jpg")).convert("RGB"), w, h)
@@ -129,12 +131,12 @@ def frame3():
     rr(d,(bx+220,by+120,bx+840,by+212),18,fill=(48,82,150,235))
     d.text((bx+244,by+138),"这个背景是实时生成的吗？",font=font(F_REG,26),fill=(240,245,255))
     badge(img,(inner[0]+w-520, inner[1]+40), "场景变化时才换图，旧图自动清理", ACCENT)
-    caption(img, 3, "自动生成背景", "主模型先判断场景有没有变，变了才出图，聊天背景跟着剧情走。")
+    caption(img, 3, "自动生成背景", "Generated backgrounds", "主模型先判断场景有没有变，变了才出图，聊天背景跟着剧情走。", "The main model checks whether the scene changed; only then is a new background drawn.")
     return img
 
 def frame4():
     img = base_canvas()
-    box = (120, 70, 1480, 820)
+    box = (120, 60, 1480, 800)
     inner = window(img, box, "SillyTavern  ·  右侧角色栏")
     d = ImageDraw.Draw(img)
     rr(d,(inner[0],inner[1],inner[0]+920,inner[3]),0,fill=(15,18,25))
@@ -152,12 +154,12 @@ def frame4():
         d.text((dx0+122,y+30),n,font=font(F_BOLD,24),fill=TEXT)
         d.text((dx0+122,y+66),"点按切换",font=font(F_REG,18),fill=MUTED)
     badge(img,(inner[0]+50, inner[1]+250), "固定 / 拖拽 / 一键切换", ACCENT)
-    caption(img, 4, "拖出右侧角色栏", "常驻右侧的角色抽屉，不用反复进菜单。")
+    caption(img, 4, "拖出右侧角色栏", "Right-side character drawer", "常驻右侧的角色抽屉，不用反复进菜单。", "Pin frequently used characters, switch with one click, drag it out of the way.")
     return img
 
 def frame5():
     img = base_canvas()
-    box = (120, 70, 1480, 820)
+    box = (120, 60, 1480, 800)
     inner = window(img, box, "SillyTavern  ·  自定义生图模型")
     d = ImageDraw.Draw(img)
     x = inner[0]+70; y = inner[1]+60
@@ -172,7 +174,7 @@ def frame5():
     d.text((x+980,y+88),"应用设置",font=font(F_BOLD,24),fill=(8,14,26))
     d.text((x,y+590),"也可以换成 SDXL / Krea 2 / 云端 API；每段聊天单独记住设置。",font=font(F_REG,20),fill=MUTED)
     badge(img,(x+930,y+170), "全在面板里改", GOLD)
-    caption(img, 5, "打开自定义生图模型设置", "模型、工作流、步数、采样器都在面板里改，不碰配置文件。")
+    caption(img, 5, "打开自定义生图模型设置", "Custom image-model settings", "模型、工作流、步数、采样器都在面板里改，不碰配置文件。", "Model, workflow, steps and sampler are editable in the panel, no config files.")
     return img
 
 def main():

@@ -11,7 +11,7 @@
 <p align="center">
   <img src="docs/showcase/carousel/carousel.gif" alt="SillyTavern DSH Pack in five frames: in-chat images, character card, background, character drawer, image model settings" width="880">
 </p>
-<p align="center"><sub>Five things the pack adds — in-chat illustrations · character-card avatars · generated backgrounds · the right-side character drawer · a custom image-model panel.</sub></p>
+<p align="center"><sub>Five things the pack adds — in-chat illustrations · character-card avatars · generated backgrounds · the right-side character drawer · a custom image-model panel.<br>五个能力：对话生图 · 角色卡头像 · 自动背景 · 右侧角色栏 · 自定义生图模型。</sub></p>
 
 ## What it does
 
