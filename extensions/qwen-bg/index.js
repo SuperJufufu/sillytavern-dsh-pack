@@ -1,5 +1,5 @@
 /**
- * Qwen 背景图 (qwen-bg) v3.4.2
+ * Qwen 背景图 (qwen-bg) v3.4.1
  *
  * 目标：每条 AI 回复后都「先判断场景有没有变」，只有变了才用 Qwen-Image 2.1 重画背景。
  *
@@ -11,7 +11,7 @@
  *   背景层用 homeBgLayer() 动态取（有 #bg_custom 用旧的，没有就用 #bg1）。
  *
  * 判断引擎（按顺序尝试，可在面板里固定）：
- *   1) local：本地 llama-server 8030（qwen3-1.7b，由 bridge-watchdog 拉起），快、免费；
+ *   1) local：本地 llama-server 8030（qwen2.5-1.5b，由 bridge-watchdog 拉起），快、免费；
  *   2) main：走 ST 主模型（DeepSeek，generateRaw）判断 —— 本地模型不在线时自动兜底，
  *      所以不会再出现「检测模型离线 → 背景永远不换」。
  *   判断结果 = { changed, scene }，其中 scene 是当前场景的英文关键词。
@@ -29,7 +29,7 @@
     'use strict';
 
     const MODULE = 'qwen-bg';
-    const VERSION = '3.4.2';
+    const VERSION = '3.4.1';
 
     // ---------------------------------------------------------------- 部署地址 --
     // 集中在这里，换机器 / 换端口只改这两行（面板里也能覆盖 detectorUrl，
@@ -42,13 +42,13 @@
     const DEFAULTS = {
         enabled: true,
         detectEngine: 'main',                 // main（主模型判断，最准）| auto（本地优先，失败用主模型）| local
-        detectorUrl: DEFAULT_DETECTOR_URL,    // 本地 llama-server（默认 qwen3-1.7b）
-        detectorModel: 'qwen3-1.7b',
+        detectorUrl: DEFAULT_DETECTOR_URL,    // 本地 llama-server（默认 qwen2.5-1.5b）
+        detectorModel: 'qwen2.5-1.5b',
         chatWindow: 6,                        // 送给判断模型的最近消息条数
         everyN: 10,                           // 兜底：连续 N 条判断都没换场景也强制换一次
         minBgInterval: 60000,                 // 两次换背景的最小间隔（毫秒）
         judgeOnChatOpen: true,                // 打开已有内容的聊天时，判断并补一张当前场景背景
-        renderer: 'sdxl',                     // sdxl（稳、快，默认）| auto（先 Qwen，不行再 SDXL）| qwen（精细但吃显存）
+        renderer: 'sdxl',                     // sdxl（稳、快，默认）| anima（动漫向）| krea2（画质最好）| auto | qwen
         width: 1216,
         height: 832,
         negative: 'people, person, human, character, text, watermark, lowres, blurry, worst quality',
@@ -109,6 +109,31 @@
         '8': { class_type: 'SaveImage', inputs: { filename_prefix: 'ST_BG', images: ['7', 0] } },
     };
 
+    const KREA2_TEMPLATE = {
+        '21': { class_type: 'UNETLoader', inputs: { unet_name: 'krea2_turbo_nvfp4.safetensors', weight_dtype: 'default' } },
+        '22': { class_type: 'CLIPLoader', inputs: { clip_name: 'qwen3vl_4b_fp8_scaled.safetensors', type: 'krea2' } },
+        '23': { class_type: 'VAELoader', inputs: { vae_name: 'qwen_image_vae.safetensors' } },
+        '24': { class_type: 'CLIPTextEncode', inputs: { clip: ['22', 0], text: '%prompt%' } },
+        '25': { class_type: 'CLIPTextEncode', inputs: { clip: ['22', 0], text: '%negative_prompt%' } },
+        '26': { class_type: 'EmptyLatentImage', inputs: { width: '%width%', height: '%height%', batch_size: 1 } },
+        '27': { class_type: 'KSampler', inputs: { model: ['21', 0], positive: ['24', 0], negative: ['25', 0], latent_image: ['26', 0], seed: '%seed%', steps: 8, cfg: 1.0, sampler_name: 'euler', scheduler: 'simple', denoise: 1.0 } },
+        '28': { class_type: 'VAEDecode', inputs: { samples: ['27', 0], vae: ['23', 0] } },
+        '29': { class_type: 'SaveImage', inputs: { images: ['28', 0], filename_prefix: 'ST_BG_Krea' } },
+    };
+
+    // Anima Turbo v1.1 工作流（动漫向，10 步，cfg 1.0，euler/simple；832x1216 约 5–8s/张）
+    const ANIMA_TEMPLATE = {
+        '31': { class_type: 'UNETLoader', inputs: { unet_name: 'anima-turbo-v1.1.safetensors', weight_dtype: 'default' } },
+        '32': { class_type: 'CLIPLoader', inputs: { clip_name: 'qwen_3_06b_base.safetensors', type: 'stable_diffusion' } },
+        '33': { class_type: 'VAELoader', inputs: { vae_name: 'qwen_image_vae.safetensors' } },
+        '34': { class_type: 'CLIPTextEncode', inputs: { clip: ['32', 0], text: '%prompt%' } },
+        '35': { class_type: 'CLIPTextEncode', inputs: { clip: ['32', 0], text: '%negative_prompt%' } },
+        '36': { class_type: 'EmptyLatentImage', inputs: { width: '%width%', height: '%height%', batch_size: 1 } },
+        '37': { class_type: 'KSampler', inputs: { model: ['31', 0], positive: ['34', 0], negative: ['35', 0], latent_image: ['36', 0], seed: '%seed%', steps: 10, cfg: 1.0, sampler_name: 'euler', scheduler: 'simple', denoise: 1.0 } },
+        '38': { class_type: 'VAEDecode', inputs: { samples: ['37', 0], vae: ['33', 0] } },
+        '39': { class_type: 'SaveImage', inputs: { images: ['38', 0], filename_prefix: 'ST_BG_Anima' } },
+    };
+
     const BG_PROMPT = [
         'Describe ONLY the physical surroundings of the current scene as a single comma-separated list of concise English visual keywords.',
         'Focus on the LOCATION and what is actually there: type of place (street, alley, room, tavern, forest...), architecture/materials, furniture/props, light sources, time of day, weather, colors, atmosphere.',
@@ -126,12 +151,9 @@
         '- a large time skip or the weather/lighting clearly changes (day→night, rain starts, fire goes out).',
         'Keep changed=false if: still the same place, only dialogue, emotions, small gestures or movements.',
         'Also output scene: up to 12 comma-separated ENGLISH visual keywords describing the CURRENT scenery (no people, no body parts).',
-        'RULE: when changed=true, the scene MUST describe the NEW place — never repeat the old location keywords.',
-        'RULE: when changed=false, keep the previous keywords (you may add details visible in the narration).',
-        'Do NOT copy the example keywords; describe THIS scene in your own words.',
         'Examples:',
-        '{"changed":true,"scene":"open market square, canvas stalls, midday sun, stone fountain"}',
-        '{"changed":false,"scene":"small attic room, sloped ceiling, dusty window, single bed"}',
+        '{"changed":true,"scene":"tavern interior, warm firelight, wooden beams, crowded tables, smoke"}',
+        '{"changed":false,"scene":"tavern interior, warm firelight, wooden beams, crowded tables, smoke"}',
         'Reply with ONLY this JSON, no markdown, no explanation.',
     ].join('\n');
 
@@ -479,6 +501,53 @@
         return { format: data.format || 'png', b64: data.data };
     }
 
+    async function renderWithKrea2(promptText) {
+        const s = settings();
+        const seed = Math.floor(Math.random() * 1e9);
+        let raw = JSON.stringify(KREA2_TEMPLATE);
+        raw = raw.replace('"%prompt%"', JSON.stringify(s.prefix + promptText));
+        raw = raw.replace('"%negative_prompt%"', JSON.stringify(s.negative));
+        raw = raw.replace('"%width%"', String(s.width));
+        raw = raw.replace('"%height%"', String(s.height));
+        raw = raw.replace('"%seed%"', String(seed));
+        const wf = JSON.parse(raw);
+
+        const c = ctx();
+        const comfyUrl = c.extensionSettings?.sd?.comfy_url || 'http://127.0.0.1:8189';
+        const resp = await fetchWithTimeout('/api/sd/comfy/generate', {
+            method: 'POST',
+            headers: c.getRequestHeaders(),
+            body: JSON.stringify({ url: comfyUrl, prompt: JSON.stringify({ prompt: wf }) }),
+        }, 8 * 60 * 1000);
+        if (!resp.ok) throw new Error('出图失败: ' + (await resp.text()).slice(0, 200));
+        const data = await resp.json();
+        return { format: data.format || 'png', b64: data.data };
+    }
+
+    /** Anima Turbo 出背景：动漫向，10 步，832x1216 约 6s/张 */
+    async function renderWithAnima(promptText) {
+        const s = settings();
+        const seed = Math.floor(Math.random() * 1e9);
+        let raw = JSON.stringify(ANIMA_TEMPLATE);
+        raw = raw.replace('"%prompt%"', JSON.stringify(s.prefix + promptText));
+        raw = raw.replace('"%negative_prompt%"', JSON.stringify(s.negative));
+        raw = raw.replace('"%width%"', String(s.width));
+        raw = raw.replace('"%height%"', String(s.height));
+        raw = raw.replace('"%seed%"', String(seed));
+        const wf = JSON.parse(raw);
+
+        const c = ctx();
+        const comfyUrl = c.extensionSettings?.sd?.comfy_url || 'http://127.0.0.1:8189';
+        const resp = await fetchWithTimeout('/api/sd/comfy/generate', {
+            method: 'POST',
+            headers: c.getRequestHeaders(),
+            body: JSON.stringify({ url: comfyUrl, prompt: JSON.stringify({ prompt: wf }) }),
+        }, 5 * 60 * 1000);
+        if (!resp.ok) throw new Error('出图失败: ' + (await resp.text()).slice(0, 200));
+        const data = await resp.json();
+        return { format: data.format || 'png', b64: data.data };
+    }
+
     /** ComfyUI 当前空闲显存（GB）；拿不到就返回 null（当作够用） */
     async function comfyVramFreeGB() {
         try {
@@ -511,6 +580,25 @@
     async function renderBackground(promptText) {
         const mode = String(settings().renderer || 'sdxl').toLowerCase();
         if (mode === 'sdxl') return renderWithSdxl(promptText);
+        if (mode === 'krea2') {
+            let free = await comfyVramFreeGB();
+            if (free !== null && free < 8) {
+                status('显存只有 ' + free.toFixed(1) + 'GB，先卸载 ComfyUI 模型…');
+                await comfyFree();
+                await sleep(2000);
+            }
+            return renderWithKrea2(promptText);
+        }
+        if (mode === 'anima') {
+            let free = await comfyVramFreeGB();
+            if (free !== null && free < 7) {
+                status('显存只有 ' + free.toFixed(1) + 'GB，先卸载 ComfyUI 模型…');
+                await comfyFree();
+                await sleep(2000);
+            }
+            return renderWithAnima(promptText);
+        }
+
         if (mode === 'qwen') {
             let free = await comfyVramFreeGB();
             if (free !== null && free < 11) {
@@ -761,7 +849,7 @@
             save();
             const lpEl = document.getElementById('qwenbg-lastprompt');
             if (lpEl) lpEl.textContent = '上次提示词：' + promptText.slice(0, 200);
-            const modelName = String(settings().renderer || 'sdxl').toLowerCase() === 'sdxl' ? 'SDXL' : 'Qwen/SDXL';
+            const modelName = ({ sdxl: 'SDXL', qwen: 'Qwen-Image 2.1', krea2: 'Krea 2', anima: 'Anima Turbo' })[String(settings().renderer || 'sdxl').toLowerCase()] || 'SDXL';
             status('③ 正在用 ' + modelName + ' 出图…（' + promptText.slice(0, 60) + '…）');
             const img = await renderBackground(promptText);
             if (c.chatId !== myChat) { status('聊天已切换，丢弃本次背景'); return false; }
@@ -905,6 +993,8 @@
                             <option value="sdxl" ${s.renderer === 'sdxl' ? 'selected' : ''}>SDXL（稳、快，和角色图同模型）</option>
                             <option value="auto" ${s.renderer === 'auto' ? 'selected' : ''}>自动（先 Qwen，放不下/失败再 SDXL）</option>
                             <option value="qwen" ${s.renderer === 'qwen' ? 'selected' : ''}>Qwen-Image 2.1（更精细，很吃显存/内存）</option>
+                            <option value="krea2" ${s.renderer === 'krea2' ? 'selected' : ''}>Krea 2（画质最好，8 步，约 60s/张）</option>
+                            <option value="anima" ${s.renderer === 'anima' ? 'selected' : ''}>Anima Turbo v1.1（动漫向，10 步，约 5–8s/张）</option>
                         </select>
                     </div>
                     <div class="flex-container flexGap5" style="margin:8px 0;flex-wrap:wrap;align-items:center;">

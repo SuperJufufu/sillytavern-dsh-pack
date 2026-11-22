@@ -10,7 +10,7 @@
 
 ## 一键安装（推荐）
 
-1. 到 **[Releases](https://github.com/SuperJufufu/sillytavern-dsh-pack/releases)** 下载 `SillyTavern-DSH-Pack-Setup-v0.3.0.cmd`（约 600 KB）；
+1. 到 **[Releases](https://github.com/SuperJufufu/sillytavern-dsh-pack/releases)** 下载 `SillyTavern-DSH-Pack-Setup-v0.4.0.cmd`（约 600 KB）；
 2. **双击**运行（「Windows 已保护你的电脑」→ 更多信息 → 仍要运行）；
 3. 安装器自动：
    - **检测本机是否已有 SillyTavern 1.19.0**：有就跳过下载本体；
@@ -113,7 +113,7 @@
 | `dsh-text-semantics` | DSH 文本语义配色 | 1.1.0 | 按语义给聊天正文分色（斜体=环境、对白=橙、加粗=内心、下划线=动作、等宽=系统） | 无 |
 | `ui-simplify` | 界面精简 | 2.4.0 | 加宽内容区、图标式按钮、右侧面板折叠、防自动跳底 | 无 |
 | `dsh-gen-guard` | DSH 生成看门狗 | 1.1.1 | 「生成中」卡死自动解锁，并给图片折叠提供排队信号 | 无 |
-| `dsh-image-fold` | DSH 图片折叠 | 1.1.4 | 生成图折叠成小缩略条（重绘/删除/点开大图） | SD 出图链路 |
+| `dsh-image-fold` | DSH 图片折叠 | 1.2.0 | 生成图折叠成小缩略条（重绘/删除/点开大图） | SD 出图链路 |
 | `dsh-model-config` | DSH 本地模型配置 | 1.0.1 | 把记忆表格/角色卡更新用的 LLM 指向本地 Ollama，并关 thinking | 本地 Ollama（11434） |
 | `dsh-gpu-queue` | DSH 重任务排队 | 1.0.0 | 生图 / 背景图 / 本地 LLM 重任务串行 | 无 |
 | `dsh-swipe-shots` | DSH 角度配图 | 1.1.0 | 每条回复后出 2 张不同角度图 + 隐藏提示词文字 | 补丁 + ComfyUI |
@@ -172,7 +172,7 @@ node patches/apply.mjs --st "<SillyTavern>"
 ## 构建 / CI
 
 ```bash
-node tools/build-installer.mjs          # 产物 dist/SillyTavern-DSH-Pack-Setup-v0.3.0.cmd
+node tools/build-installer.mjs          # 产物 dist/SillyTavern-DSH-Pack-Setup-v0.4.0.cmd
 ```
 
 - `.github/workflows/ci.yml`：push/PR 时自动扫描 + 语法检查 + 构建安装包（产物仅 artifact）。

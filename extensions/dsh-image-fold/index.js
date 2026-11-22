@@ -1,7 +1,7 @@
 /**
- * DSH 图片折叠 (dsh-image-fold) v1.1.3
+ * DSH 图片折叠 (dsh-image-fold) v1.2.0
  *
- * 问题：每轮出图会在聊天里插入一条「只有图片」的消息（extra.image / inline_image=false），
+ * 问题：每轮出图会在聊天里插入一条「只有图片」的消息（extra.media / extra.image，inline_image=false），
  *       ST 默认按 40vh 高度直接铺在聊天里，连续几张就把对话框占满了。
  *
  * 做法：把这类图片消息折叠成一条小缩略条（缩略图 + 「图片 · 点击查看」+ 重绘 / 删除按钮），
@@ -13,22 +13,29 @@
  *   · 删除 = 删除这条图片消息，并把磁盘上的图片文件（当前图 + 全部重绘版本）一起删掉，
  *            不再留下占空间的孤儿文件（v1.1.3 起真删文件；被聊天背景引用的文件会保留）。
  *
+ * v1.2.0：适配 ST 1.19 的媒体新格式与 DOM 结构。
+ *   · 图片消息现在存 `extra.media[]` + `extra.media_index`（旧消息仍可能是 `extra.image`）；
+ *   · 图片容器从 `.mes_block > .mes_img_container` 挪到了 `.mes_block > .mes_media_wrapper > .mes_img_container`，
+ *     旧版折叠 CSS 命中不了 → 原图直接铺在聊天里；本版同时兼容两种结构/两种数据格式。
+ *
  * 只处理「非 inline」的图片消息；文字里内嵌的图片、视频消息不动。删掉本文件夹 = 完全恢复原样。
  */
 (function () {
     'use strict';
 
-    const VERSION = '1.1.4';
+    const VERSION = '1.2.0';
     const FOLD = 'dsh-imgfold';
     const BAR = 'dsh-imgfold-bar';
     const OVERLAY = 'dsh-imgfold-overlay';
     const STYLE_ID = 'dsh-imgfold-style';
 
     const CSS = `
-.mes.${FOLD} > .mes_block > .mes_img_container { display: none !important; }
-/* v1.1.4：生成图（非 inline）的容器在「还没被折叠」的瞬间也先隐藏 ——
-   否则每次新消息/重绘时，旧图会先以整张大图露出来，还能被点到 ST 自带的大图弹窗 */
-.mes .mes_img_container.img_extra:has(> .mes_img:not(.img_inline)) { display: none !important; }
+/* 折叠：ST 1.19 的图片容器在 .mes_media_wrapper 里（旧版是 .mes_block 直属），用后代选择器两种都盖住 */
+.mes.${FOLD} .mes_img_container,
+.mes.${FOLD} .mes_media_wrapper > .mes_img_container { display: none !important; }
+/* v1.2.0：非 inline 的图片消息（ST 会给 .mes_text 加 inline_media 隐藏文字）在折叠装饰到位前也先藏起来，
+   避免新消息/重绘时旧图先整张露一下；只对独立图片消息生效，文字内嵌图片不受影响 */
+.mes:has(.mes_text.inline_media) .mes_img_container { display: none !important; }
 .mes > .mes_block > .${BAR} {
     display: flex;
     align-items: center;
@@ -135,12 +142,64 @@
         (document.head || document.documentElement).appendChild(st);
     }
 
-    /** 这条消息是不是「生成出来的图片」（非 inline 图片消息） */
+    /** 一条消息上的图片附件列表（ST 1.19 的 extra.media[] 或旧格式 extra.image） */
+    function mediaOf(mes) {
+        const e = mes && mes.extra;
+        const arr = e && Array.isArray(e.media) ? e.media : [];
+        return arr.filter((it) => {
+            if (!it || !it.url) return false;
+            if (it.type) return it.type === 'image';
+            return /\.(png|jpe?g|webp|gif)(\?|$)/i.test(String(it.url));
+        });
+    }
+
+    function mediaIndex(mes) {
+        const e = mes && mes.extra;
+        const n = e && Number.isInteger(e.media_index) ? e.media_index : 0;
+        return n >= 0 ? n : 0;
+    }
+
+    /** 当前显示的那张图的 src（兼容 extra.media 与 extra.image） */
     function imageOf(mes) {
-        if (!mes || !mes.extra) return '';
-        if (mes.extra.inline_image) return '';
-        if (!mes.extra.image) return '';
-        return String(mes.extra.image);
+        const e = mes && mes.extra;
+        if (!e) return '';
+        if (e.inline_image) return '';
+        const media = mediaOf(mes);
+        if (media.length) {
+            const arr = Array.isArray(e.media) ? e.media : [];
+            const at = arr[mediaIndex(mes)];
+            const pick = at && media.includes(at) ? at : media[0];
+            return String((pick && pick.url) || '');
+        }
+        if (!e.image) return '';
+        return String(e.image);
+    }
+
+    /** 当前图在这条消息所有图片里的序号 / 总数（用于小条上的 1/3） */
+    function imageCount(mes) {
+        const media = mediaOf(mes);
+        const src = imageOf(mes);
+        if (media.length) {
+            const idx = media.findIndex((it) => String(it.url) === src);
+            return { total: media.length, index: idx >= 0 ? idx : 0 };
+        }
+        const swipes = Array.isArray(mes && mes.extra && mes.extra.image_swipes) ? mes.extra.image_swipes : [];
+        const idx = swipes.indexOf(src);
+        return { total: swipes.length, index: idx >= 0 ? idx : 0 };
+    }
+
+    /** 当前图的提示词标题（新格式 title 挂在媒体条目上） */
+    function titleOf(mes) {
+        const e = mes && mes.extra;
+        if (!e) return '';
+        const media = mediaOf(mes);
+        if (media.length) {
+            const arr = Array.isArray(e.media) ? e.media : [];
+            const at = arr[mediaIndex(mes)];
+            const pick = at && media.includes(at) ? at : media[0];
+            if (pick && pick.title) return String(pick.title);
+        }
+        return e.title ? String(e.title) : '';
     }
 
     function msgOfEl(el) {
@@ -194,7 +253,7 @@
         const mes = msgOfEl(el);
         const src = imageOf(mes);
         if (!src) return;
-        overlayOpen(src, mes.extra && mes.extra.title ? mes.extra.title : '');
+        overlayOpen(src, titleOf(mes));
     }
 
     function toast(level, msg) {
@@ -266,7 +325,7 @@
             await sleep(600);
         }
         const mes = msgOfEl(messageEl);
-        const after = mes && mes.extra ? String(mes.extra.image || '') : '';
+        const after = imageOf(mes);
         return { sawBusy, after, changed: after !== before };
     }
 
@@ -286,7 +345,7 @@
         const label = btn ? btn.querySelector('.dsh-imgfold-btn-text') : null;
         const oldLabel = label ? label.textContent : '';
         const mes0 = msgOfEl(messageEl);
-        const before = mes0 && mes0.extra ? String(mes0.extra.image || '') : '';
+        const before = imageOf(mes0);
         redrawBusy = true;
         lastRedrawError = '';
         const restoreToast = captureToasts();
@@ -343,12 +402,15 @@
         return s;
     }
 
-    /** 一条消息上挂的所有本地图片文件：当前图 + 全部重绘版本(image_swipes) + 视频 */
+    /** 一条消息上挂的所有本地图片文件：extra.media 全部条目 + 旧格式 image/image_swipes + 视频 */
     function collectMessageImageFiles(mes) {
         const e = mes && mes.extra;
         if (!e) return [];
         const out = new Set();
         const add = (v) => { const p = normFileUrl(v); if (p) out.add(p); };
+        if (Array.isArray(e.media)) {
+            for (const it of e.media) if (it && it.url) add(it.url);
+        }
         add(e.image);
         add(e.video);
         if (Array.isArray(e.image_swipes)) for (const v of e.image_swipes) add(v);
@@ -534,12 +596,11 @@
             }
         }
         const count = bar.querySelector('.dsh-imgfold-count');
-        const swipes = Array.isArray(mes && mes.extra && mes.extra.image_swipes) ? mes.extra.image_swipes : [];
         if (count) {
-            const idx = swipes.indexOf(src);
-            count.textContent = swipes.length > 1 ? ((idx >= 0 ? idx : 0) + 1) + '/' + swipes.length : '';
+            const n = imageCount(mes);
+            count.textContent = n.total > 1 ? (n.index + 1) + '/' + n.total : '';
         }
-        const title = mes && mes.extra && mes.extra.title ? String(mes.extra.title) : '';
+        const title = titleOf(mes);
         bar.title = title ? title.slice(0, 300) : '点击查看图片';
     }
 
@@ -561,8 +622,11 @@
         if (!bar) {
             bar = makeBar(el);
             const block = el.querySelector(':scope > .mes_block');
-            const imgBox = el.querySelector(':scope > .mes_block > .mes_img_container');
-            if (block && imgBox && imgBox.parentElement === block) block.insertBefore(bar, imgBox);
+            // ST 1.19 把图片容器包进 .mes_media_wrapper；旧版是 .mes_block 直属。小条都插在图片容器前面
+            const mediaWrap = el.querySelector(':scope > .mes_block > .mes_media_wrapper');
+            const imgBox = el.querySelector(':scope > .mes_block > .mes_img_container') || (mediaWrap && mediaWrap.querySelector('.mes_img_container'));
+            const anchor = mediaWrap || imgBox;
+            if (block && anchor && anchor.parentElement) anchor.parentElement.insertBefore(bar, anchor);
             else if (block) block.appendChild(bar);
             else el.appendChild(bar);
         }

@@ -1,5 +1,5 @@
 /**
- * 界面精简 (ui-simplify) v2.4.0
+ * 界面精简 (ui-simplify) v2.5.0
  *   1) 打开 ST 时自动展开右侧「角色管理」面板
  *   2) 欢迎页「Recent Chats」上方显示一行中文使用提示
  *   3) 移除欢迎语里 ST 自带的那句英文 Hint
@@ -302,6 +302,15 @@ body.${WIDE_CLASS} .fillRight.openDrawer {
 
         const nearBottom = () => (chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight) < 80;
 
+        // 供「回到底部」按钮调用：绕过防跳底锁，直接落到最新一条
+        chatEl.__dshJumpToBottom = () => {
+            restoring = true;
+            chatEl.scrollTop = chatEl.scrollHeight;
+            saved = chatEl.scrollTop;
+            atBottom = true;
+            setTimeout(() => { restoring = false; }, 150);
+        };
+
         chatEl.addEventListener('scroll', () => {
             if (restoring) return;
             const pos = chatEl.scrollTop;
@@ -384,6 +393,56 @@ body.${WIDE_CLASS} .fillRight.openDrawer {
         } catch (e) { /* ignore */ }
     }
 
+    /** 右下角「回到底部」按钮：放在右侧留白里，不压聊天正文；往上翻时才出现 */
+    function installScrollBottomButton() {
+        if (document.getElementById('dsh-scroll-bottom')) return;
+        const chatEl = document.getElementById('chat');
+        const form = document.getElementById('send_form');
+        if (!chatEl || !form) return;
+        const style = document.createElement('style');
+        style.id = 'dsh-scroll-bottom-style';
+        style.textContent = `
+            #dsh-scroll-bottom{
+                position:fixed;right:max(2px,calc(2.5vw - 38px));width:36px;height:36px;border-radius:50%;
+                display:none;align-items:center;justify-content:center;
+                background:var(--SmartThemeBlurTintColor,rgba(30,30,40,.85));
+                border:1px solid var(--SmartThemeBorderColor,rgba(255,255,255,.2));
+                color:var(--SmartThemeBodyColor,#eee);font-size:15px;cursor:pointer;
+                z-index:45;opacity:.78;transition:opacity .15s,transform .15s;
+                box-shadow:0 2px 10px rgba(0,0,0,.35);
+            }
+            #dsh-scroll-bottom:hover{opacity:1;transform:translateY(-1px);}
+        `;
+        document.head.appendChild(style);
+        const btn = document.createElement('button');
+        btn.id = 'dsh-scroll-bottom';
+        btn.type = 'button';
+        btn.title = '回到底部（最新一条对话）';
+        btn.innerHTML = '<i class="fa-solid fa-arrow-down"></i>';
+        document.body.appendChild(btn);
+
+        const place = () => {
+            const r = form.getBoundingClientRect();
+            btn.style.bottom = Math.max(8, window.innerHeight - r.top + 10) + 'px';
+        };
+        const refresh = () => {
+            const dist = chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight;
+            btn.style.display = dist > 160 ? 'flex' : 'none';
+            place();
+        };
+        btn.addEventListener('click', (e) => {
+            e.preventDefault(); e.stopPropagation();
+            if (typeof chatEl.__dshJumpToBottom === 'function') chatEl.__dshJumpToBottom();
+            else chatEl.scrollTop = chatEl.scrollHeight;
+            refresh();
+        });
+        chatEl.addEventListener('scroll', refresh, { passive: true });
+        window.addEventListener('resize', refresh);
+        setInterval(refresh, 1500);
+        refresh();
+        console.log('[ui-simplify] 回到底部按钮已启用');
+    }
+
     function tick() {
         tries++;
         try {
@@ -393,6 +452,7 @@ body.${WIDE_CLASS} .fillRight.openDrawer {
             injectListButton();
             applyChatWidth();
             installScrollLock();
+            installScrollBottomButton();
             updateChatOnlyButtons();
         } catch (e) {
             console.warn('[ui-simplify]', e);

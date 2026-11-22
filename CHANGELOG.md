@@ -1,7 +1,19 @@
 # Changelog
 
+## v0.4 — 2026-11-22
+
+### 出图模型扩展 + 对话体验
+
+- `qwen-bg` 3.4.1 → 3.4.4：背景图出图模型新增 **Anima Turbo v1.1**（10 步，约 5–8 秒/张，动漫向）与 **Krea 2**（8 步，约 60 秒/张，画质最好）；面板可直接切换，默认仍是 SDXL。显存不足时先卸载 ComfyUI 现有模型再出图。
+- `ui-simplify` 2.5.0：聊天右下新增「回到底部」圆钮，滚动离底超过 160px 才出现，不遮挡正文；点击瞬间跳到最新一条。
+- `chat-namer` 2.1.1：本地命名模型改用 `qwen3-1.7b`。
+
 ## 未发布 — 2026-11-16
 
+### 图片折叠适配 ST 1.19
+
+- `dsh-image-fold` 1.1.4 → 1.2.0：适配 ST 1.19 的新图片消息格式（`extra.media` 数组与 `.mes_media_wrapper` 容器），修复升级 ST 后「原图直铺、缩略条失效」的问题；新格式的缩略条、重绘、删除、点开大图全部可用。
+- 旧格式聊天（`extra.image`）仍然兼容；新旧两种消息可以同时折叠。
 ### 开屏安全（首次启动无图片）
 
 - 新增 `scripts/check-no-images-in-payload.mjs`：校验安装包 payload（extensions/patches/installer）不含任何图片文件，CI 强制 PASS。
