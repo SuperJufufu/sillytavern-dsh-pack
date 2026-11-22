@@ -51,5 +51,5 @@ node scripts/check-first-run-safe.mjs --st "<SillyTavern 目录>"
 
 ## 版本前提
 
-- 安装器固定下载 **ST 1.19.0（GitHub tag）**，上述默认内容与该版本一致；
+- 安装器固定下载 **ST 1.19.1（GitHub tag）**；本页逐项检查与截图基于 1.19.0，1.19.1 已用同一脚本复查 PASS（2026-11-23）。
 - 若未来 ST 默认内容变化，`check-first-run-safe.mjs` 会失败提醒，需要重新人工复核并更新本说明。
