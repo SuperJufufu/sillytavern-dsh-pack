@@ -1,8 +1,8 @@
 # SillyTavern DSH Pack
 
-**中文：一键把原版 SillyTavern 变成能自己出图、自己换背景、自己更新角色卡头像的本地角色扮演工作台。**
+**中文：一键把原版 SillyTavern 变成能看图、能出图、会自己换背景的本地角色扮演工作台。**
 
-**A one-click Windows installer that turns a stock SillyTavern into a self-hosting roleplay studio: in-chat illustrations, auto backgrounds, character-card avatars, a vision bridge for image messages, and a GPU queue that keeps local generation from blocking the chat.**
+**A one-click Windows installer that turns a stock SillyTavern into a local roleplay studio that can read the images you send, draw illustrations for replies, and change the background when the scene moves — with a GPU queue so generation never blocks the chat.**
 
 [![Release](https://img.shields.io/github/v/release/SuperJufufu/sillytavern-dsh-pack?color=blue)](https://github.com/SuperJufufu/sillytavern-dsh-pack/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -51,7 +51,7 @@ Nothing else is touched: no system changes, no admin rights, no user data in thi
 
 > 以下中文为人工撰写；浏览器自动翻译可能失真，以本段为准。
 
-**一键把原版 SillyTavern 变成能自己出图、自己换背景、自己更新角色卡头像的本地角色扮演工作台。** 安装器负责检测/下载 SillyTavern 1.19.1、安装 14 个扩展、打 3 个补丁、装依赖、建快捷方式；仓库里不放任何用户数据、图片或密钥。
+**一键把原版 SillyTavern 变成能看图、能出图、会自己换背景的本地角色扮演工作台。** 安装器负责检测/下载 SillyTavern 1.19.1、安装 14 个扩展、打 3 个补丁、装依赖、建快捷方式；仓库里不放任何用户数据、图片或密钥。
 
 <p align="center">
   <img src="docs/showcase/carousel/01.png" alt="对话时自动生图" width="820">
