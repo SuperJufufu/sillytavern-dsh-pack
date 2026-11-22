@@ -24,7 +24,7 @@ function argValue(name, fallback) {
   const i = argv.indexOf(name)
   return i >= 0 && argv[i + 1] ? argv[i + 1] : fallback
 }
-const VERSION = argValue('--version', '0.3.0')
+const VERSION = argValue('--version', '0.4.3')
 const OUT = resolve(argValue('--out', join(ROOT, 'dist', `SillyTavern-DSH-Pack-Setup-v${VERSION}.cmd`)))
 
 // ---------------------------------------------------------------- CRC32 / ZIP (store)

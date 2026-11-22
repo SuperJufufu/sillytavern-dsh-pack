@@ -1,22 +1,22 @@
-# SillyTavern DSH 扩展包（v0.3）
+# SillyTavern DSH 扩展包（v0.4.3）
 
 [![Release](https://img.shields.io/github/v/release/SuperJufufu/sillytavern-dsh-pack?color=blue)](https://github.com/SuperJufufu/sillytavern-dsh-pack/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CI](https://github.com/SuperJufufu/sillytavern-dsh-pack/actions/workflows/ci.yml/badge.svg)](https://github.com/SuperJufufu/sillytavern-dsh-pack/actions/workflows/ci.yml)
 
-> 一组给 **SillyTavern 1.19.x** 用的自研前端扩展（13 个）+ 可选 AGPL 补丁。
+> 一组给 **SillyTavern 1.19.x** 用的自研前端扩展（14 个，含视觉读图）+ 可选 AGPL 补丁。
 > **不包含** SillyTavern 本体源码、不包含任何用户数据（聊天 / 角色卡 / 世界书 / 图片 / 密钥），
 > **也不包含成人向内容**。请在符合当地法律与 GitHub 政策的前提下使用/分发。
 
 ## 一键安装（推荐）
 
-1. 到 **[Releases](https://github.com/SuperJufufu/sillytavern-dsh-pack/releases)** 下载 `SillyTavern-DSH-Pack-Setup-v0.4.0.cmd`（约 600 KB）；
+1. 到 **[Releases](https://github.com/SuperJufufu/sillytavern-dsh-pack/releases)** 下载 `SillyTavern-DSH-Pack-Setup-v0.4.3.cmd`（约 600 KB）；
 2. **双击**运行（「Windows 已保护你的电脑」→ 更多信息 → 仍要运行）；
 3. 安装器自动：
-   - **检测本机是否已有 SillyTavern 1.19.0**：有就跳过下载本体；
-   - 没有就下载 ST 1.19.0 源码包（GitHub tag，约 36.7 MB）并解压；
+   - **检测本机是否已有 SillyTavern 1.19.1**：有就跳过下载本体；
+   - 没有就下载 ST 1.19.1 源码包（GitHub tag，约 37 MB）并解压；
    - 检测 Node.js（ST 1.19 要求 ≥ 20），没有就下载便携版（免管理员）；
-   - 安装 **13 个扩展**到 `<ST>/data/default-user/extensions/`；
+   - 安装 **14 个扩展**（含 `dsh-vision-bridge`：发图→视觉模型描述→文本模型回复）到 `<ST>/data/default-user/extensions/`；
    - 应用 **ST 补丁**（`patches/`，AGPL-3.0；改前自动备份；`--no-patches` 可跳过）；
    - `npm install --omit=dev`（与 ST 自带 Start.bat 一致）；
    - 创建桌面快捷方式、写安装记录。
@@ -26,9 +26,9 @@
 
 | 场景 | 行为 |
 |---|---|
-| 检测到 ST 1.19.0 | 不下载本体，直接装扩展 + 应用补丁 |
-| 检测到其他版本 ST | 询问：装到已有版本 / 另装一份 1.19.0 / 退出 |
-| 没检测到 ST | 下载并安装 ST 1.19.0 到 `%LOCALAPPDATA%\SillyTavern-DSH\SillyTavern` |
+| 检测到 ST 1.19.1 | 不下载本体，直接装扩展 + 应用补丁 |
+| 检测到其他版本 ST | 询问：装到已有版本 / 另装一份 1.19.1 / 退出 |
+| 没检测到 ST | 下载并安装 ST 1.19.1 到 `%LOCALAPPDATA%\SillyTavern-DSH\SillyTavern` |
 | 再次运行 | 同版本扩展跳过；补丁幂等；只补缺失项 |
 | 无 Node.js | 自动下载便携 Node（最新 LTS） |
 
@@ -42,7 +42,7 @@
 --st-path <dir>      指定已有 ST 目录
 --install-dir <dir>  新装 ST 目标目录
 --data-root <dir>    指定 data 根（默认 <ST>/data）
---st-version <ver>   目标 ST 版本（默认 1.19.0）
+--st-version <ver>   目标 ST 版本（默认 1.19.1）
 --from-zip <path>    用本地 ST zip 代替下载
 --mirror <prefix>    下载镜像前缀（如 https://ghproxy.net/）
 --node-version <v>   指定 Node 版本
@@ -75,7 +75,7 @@
 ## 首次启动（开屏）没有图片
 
 整合包**不打包任何图片资源**（只分发扩展脚本 / 补丁 / 安装器，由 `scripts/check-no-images-in-payload.mjs` 校验）。
-安装的 ST 1.19.0 首次启动默认背景是透明的（`backgrounds/__transparent.png`），所以开屏是深色界面
+安装的 ST 1.19.1 首次启动默认背景是透明的（`backgrounds/__transparent.png`），所以开屏是深色界面
 + ST logo + 欢迎弹窗，**没有背景图、没有色图**：
 
 | 启动 splash | 首次欢迎弹窗 |
@@ -197,12 +197,12 @@ sillytavern-dsh-pack/
 
 ## 已知限制
 
-- 只在 Windows 11 + Chrome 的 ST 1.19.0 上实测；安装器需要联网（ST / Node / npm）。
+- 只在 Windows 11 + Chrome 的 ST 1.19.1 上实测；安装器需要联网（ST / Node / npm）。
 - 部分扩展面向「本地 ComfyUI + Ollama」环境，纯云端环境可能用不上。
 - 不保证与未来 ST 版本兼容；升级 ST 前请备份 `data/`。
 
 ## English
 
-A pack of self-built client-side extensions (13) for **SillyTavern 1.19.x**, plus a one-click Windows
+A pack of self-built client-side extensions (14) for **SillyTavern 1.19.x**, plus a one-click Windows
 installer and optional AGPL-3.0 patches. It contains **no SillyTavern source, no user data, no adult
 content**. Extensions are MIT; patches are AGPL-3.0; see NOTICE for attribution.

@@ -1,4 +1,4 @@
-<#
+﻿<#
   SillyTavern DSH Pack —— 一键安装器（主逻辑）
   由 bootstrap.cmd 从单文件安装包中解压后调用。
 
@@ -16,7 +16,7 @@ param(
     [string]$StPath = '',
     [string]$InstallDir = '',
     [string]$DataRoot = '',
-    [string]$StVersion = '1.19.0',
+    [string]$StVersion = '1.19.1',
     [string]$FromZip = '',
     [string]$Mirror = '',
     [string]$NodeVersion = '',
@@ -33,7 +33,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$Script:PackVersion = '0.3.0'
+$Script:PackVersion = '0.4.3'
 $Script:LogPath = Join-Path $env:TEMP ("dsh-pack-install-" + (Get-Date -Format 'yyyyMMdd-HHmmss') + ".log")
 $Script:NoWrite = [bool]$DryRun
 $global:InstallerExitCode = 0
@@ -65,7 +65,7 @@ function Show-Banner {
     Write-Host ''
     Write-Host '  ==================================================' -ForegroundColor Cyan
     Write-Host ('   SillyTavern DSH Pack  v' + $Script:PackVersion + '  一键安装器') -ForegroundColor Cyan
-    Write-Host '   13 个扩展 · 自动检测/下载 SillyTavern · 不含成人内容' -ForegroundColor DarkGray
+    Write-Host '   14 个扩展 · 自动检测/下载 SillyTavern · 不含成人内容' -ForegroundColor DarkGray
     Write-Host '  ==================================================' -ForegroundColor Cyan
     Write-LogLine ('installer started; pack=' + $Script:PackVersion + ' ps=' + $PSVersionTable.PSVersion.ToString())
 }
@@ -73,13 +73,13 @@ function Show-Banner {
 function Show-Help {
     Show-Banner
     Write-Host @'
-  用法: SillyTavern-DSH-Pack-Setup-v0.3.0.cmd [参数]
+  用法: SillyTavern-DSH-Pack-Setup-v0.4.3.cmd [参数]
 
   常用:
     --st-path <目录>      指定已有 SillyTavern 目录（跳过自动检测）
     --install-dir <目录>  新装 ST 的目标目录（默认 %LOCALAPPDATA%\SillyTavern-DSH\SillyTavern）
     --data-root <目录>    指定 data 根目录（默认 <ST>\data）
-    --st-version <版本>   目标 ST 版本（默认 1.19.0）
+    --st-version <版本>   目标 ST 版本（默认 1.19.1）
     --from-zip <zip>      用本地 ST zip 代替下载
     --mirror <前缀>       下载镜像前缀，例如 https://ghproxy.net/
     --help                显示本帮助
@@ -665,8 +665,8 @@ if (-not $npmOk) { Warn '依赖未完全安装：首次启动时 Start.bat 会�
 if (-not $patchOk) { Warn 'ST 补丁未应用：dsh-swipe-shots 角度图 / 写词稳定器钩子可能不生效（可手动跑 patches/apply.mjs）。' }
 Say ''
 Say '  启动方式: 双击桌面「SillyTavern DSH」快捷方式，或运行 ST 目录下的 Start.bat。' 'White'
-Say '  首次启动会初始化 data 并自动带上这 13 个扩展；刷新页面即可在 Extensions 面板看到。' 'DarkGray'
-Say '  卸载: 删除 extensions 下对应的 13 个文件夹、删除安装记录与快捷方式；若为安装器新装的 ST，可直接删整个 ST 目录。' 'DarkGray'
+Say '  首次启动会初始化 data 并自动带上这 14 个扩展；刷新页面即可在 Extensions 面板看到。' 'DarkGray'
+Say '  卸载: 删除 extensions 下对应的 14 个文件夹、删除安装记录与快捷方式；若为安装器新装的 ST，可直接删整个 ST 目录。' 'DarkGray'
 Say '  注意: 角度配图扩展需要 v1 的 ST 补丁，未打补丁时仅提示词隐藏可用。' 'DarkGray'
 Say ''
 Say ('  日志: ' + $Script:LogPath) 'DarkGray'

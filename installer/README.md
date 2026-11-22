@@ -1,6 +1,6 @@
 # SillyTavern DSH Pack —— 一键安装器
 
-> 双击 `SillyTavern-DSH-Pack-Setup-v0.3.0.cmd` 即可。安装器会：
+> 双击 `SillyTavern-DSH-Pack-Setup-v0.4.3.cmd` 即可。安装器会：
 > 1. 检测本机是否已有 **SillyTavern 1.19.0**（有就不下载本体）；
 > 2. 没有就自动下载 ST 1.19.0 源码包（GitHub tag，约 36.7 MB），解压到安装目录；
 > 3. 检测/自动准备 Node.js（ST 1.19 要求 Node >= 20；没有就下载便携版到本地，无需管理员）；
@@ -23,7 +23,7 @@ tools/
 
 ```bash
 node tools/build-installer.mjs
-# 产物：dist/SillyTavern-DSH-Pack-Setup-v0.3.0.cmd（约 600 KB）
+# 产物：dist/SillyTavern-DSH-Pack-Setup-v0.4.3.cmd（约 600 KB）
 ```
 
 构建原理：把 `installer/install.ps1` + `extensions/**` + `patches/**` + `LICENSE` + `NOTICE` 打成 ZIP（store，无依赖），
