@@ -28,3 +28,9 @@
 
 - 出图：本地 ComfyUI（SDXL），prompt 里对 A/B 使用同一套角色 tag；
 - 演示只用于 README/截图，不参与扩展运行；换模型/换后端不影响扩展行为。
+
+## README 轮播
+
+- `carousel/01.png` … `05.png`：5 张 1600×1000 功能页（对话生图 / 角色卡 / 背景 / 角色栏 / 生图设置）。
+- `carousel/carousel.gif`：同一组画面的来回播放版（5 页正放 + 3 页倒放，1.2s/页）。
+- 生成脚本：`tools/make_carousel.py`（改 `frameN()` 即可换版式）。

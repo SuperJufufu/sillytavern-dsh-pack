@@ -1,17 +1,74 @@
-# SillyTavern DSH 扩展包（v0.4.3）
+# SillyTavern DSH Pack
+
+**A one-click Windows installer that turns a stock SillyTavern into a self-hosting roleplay studio: in-chat illustrations, auto backgrounds, character-card avatars, a vision bridge for image messages, and a GPU queue that keeps local generation from blocking the chat.**
 
 [![Release](https://img.shields.io/github/v/release/SuperJufufu/sillytavern-dsh-pack?color=blue)](https://github.com/SuperJufufu/sillytavern-dsh-pack/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![CI](https://github.com/SuperJufufu/sillytavern-dsh-pack/actions/workflows/ci.yml/badge.svg)](https://github.com/SuperJufufu/sillytavern-dsh-pack/actions/workflows/ci.yml)
+[![CI](https://img.shields.io/github/actions/workflow/status/SuperJufufu/sillytavern-dsh-pack/ci.yml?branch=main)](https://github.com/SuperJufufu/sillytavern-dsh-pack/actions/workflows/ci.yml)
 
-> 一组给 **SillyTavern 1.19.x** 用的自研前端扩展（14 个，含视觉读图）+ 可选 AGPL 补丁。
-> **不包含** SillyTavern 本体源码、不包含任何用户数据（聊天 / 角色卡 / 世界书 / 图片 / 密钥），
-> **也不包含成人向内容**。请在符合当地法律与 GitHub 政策的前提下使用/分发。
+<p align="center">
+  <img src="docs/showcase/carousel/carousel.gif" alt="SillyTavern DSH Pack in five frames: in-chat images, character card, background, character drawer, image model settings" width="880">
+</p>
+<p align="center"><sub>Five things the pack adds — in-chat illustrations · character-card avatars · generated backgrounds · the right-side character drawer · a custom image-model panel.</sub></p>
 
-## 一键安装（推荐）
+## What it does
 
-1. 到 **[Releases](https://github.com/SuperJufufu/sillytavern-dsh-pack/releases)** 下载 `SillyTavern-DSH-Pack-Setup-v0.4.3.cmd`（约 600 KB）；
-2. **双击**运行（「Windows 已保护你的电脑」→ 更多信息 → 仍要运行）；
+| # | Feature | What you get |
+|---|---|---|
+| 1 | **In-chat illustrations** | After each AI reply, a wide `scene` and a close `closeup` are generated and inserted as normal images; prompt text is hidden from the chat. |
+| 2 | **Character-card avatars** | A new portrait is written back to the character card (old avatar backed up), and the same character stays consistent across shots. |
+| 3 | **Generated backgrounds** | The main model decides whether the scene changed; only then is a new background generated, and the replaced file is cleaned up. |
+| 4 | **Right-side character drawer** | Keep frequently used characters pinned in a drawer, switch with one click, and drag it out of the way. |
+| 5 | **Custom image-model panel** | Pick the model, workflow, steps, CFG, sampler and backend (local ComfyUI or a cloud API) without editing config files. |
+
+## Install (Windows)
+
+1. Open **[Releases](https://github.com/SuperJufufu/sillytavern-dsh-pack/releases)** and download `SillyTavern-DSH-Pack-Setup-v0.4.3.cmd` (~625 KB).
+2. Double-click it. If Windows SmartScreen appears, choose **More info → Run anyway**.
+3. The installer will:
+   - detect an existing **SillyTavern 1.19.1** and reuse it, or download the 1.19.1 source zip (~37 MB) when none is found;
+   - check Node.js ≥ 20 and download a portable Node if needed;
+   - install **14 extensions** into `<ST>/data/default-user/extensions/`;
+   - apply three small **AGPL-3.0 patches** (backed up first, idempotent, `--no-patches` to skip);
+   - run `npm install --omit=dev`, create a desktop shortcut, and write an install record.
+4. Launch **SillyTavern DSH** from the desktop. The first start seeds `data/` with all extensions enabled.
+
+Nothing else is touched: no system changes, no admin rights, no user data in this repository.
+
+## What's inside
+
+- **14 front-end extensions** — streaming, prompt/text utilities, UI simplification, generation guard, image folding, model profiles, GPU queue, swipe shots, chat naming, thumbnails, prompt stability, auto avatars, background generation and a vision bridge.
+- **3 patches** against SillyTavern 1.19.1 — SD angle hints, stable prompt writer, and a Windows-safe save retry.
+- **An offline installer** — checks, downloads, installs, patches, and records everything in one `.cmd`.
+
+> The pack contains **no** SillyTavern source, **no** chats / cards / world books / images / API keys, and **no** adult content. Use it in line with your local law and GitHub's policies.
+
+---
+
+# 中文说明
+
+**一键把原版 SillyTavern 变成能自己出图、自己换背景、自己更新角色卡头像的本地角色扮演工作台。** 安装器负责检测/下载 SillyTavern 1.19.1、安装 14 个扩展、打 3 个补丁、装依赖、建快捷方式；仓库里不放任何用户数据、图片或密钥。
+
+<p align="center">
+  <img src="docs/showcase/carousel/01.png" alt="对话时自动生图" width="820">
+</p>
+
+## 五个能力
+
+| # | 能力 | 说明 |
+|---|---|---|
+| 1 | **对话时生图** | 每条 AI 回复后自动生成 `scene`（广角）与 `closeup`（近景），作为普通图片消息插入；系统提示词文字自动隐藏。 |
+| 2 | **角色卡自动更新** | 自动生成的头像直接写回角色卡（旧图先备份）；同一角色跨镜头保持设定一致。 |
+| 3 | **自动生成背景** | 主模型先判断场景有没有变化，变了才出图；聊天背景跟着剧情走，被替换的旧图自动清理。 |
+| 4 | **右侧角色栏** | 常用角色固定在右侧抽屉，点一下切换，也可以拖出来腾地方。 |
+| 5 | **自定义生图模型** | 模型、工作流、步数、CFG、采样器、后端（本地 ComfyUI 或云端 API）都在面板里改，不用碰配置文件。 |
+
+更多截图见 `docs/showcase/carousel/`（5 张 1600×1000 PNG + 来回播放的 GIF）。
+
+## 一键安装
+
+1. 打开 **[Releases](https://github.com/SuperJufufu/sillytavern-dsh-pack/releases)**，下载 `SillyTavern-DSH-Pack-Setup-v0.4.3.cmd`（约 625 KB）；
+2. **双击**运行（若出现「Windows 已保护你的电脑」→ 更多信息 → 仍要运行）；
 3. 安装器自动：
    - **检测本机是否已有 SillyTavern 1.19.1**：有就跳过下载本体；
    - 没有就下载 ST 1.19.1 源码包（GitHub tag，约 37 MB）并解压；
@@ -32,8 +89,7 @@
 | 再次运行 | 同版本扩展跳过；补丁幂等；只补缺失项 |
 | 无 Node.js | 自动下载便携 Node（最新 LTS） |
 
-只写入：ST 安装目录、`<ST>/data/default-user/extensions/`、桌面快捷方式、
-安装记录 `%APPDATA%\SillyTavern-DSH-Pack\install.json`；不改系统、不要管理员。
+只写入：ST 安装目录、`<ST>/data/default-user/extensions/`、桌面快捷方式、安装记录 `%APPDATA%\SillyTavern-DSH-Pack\install.json`；不改系统、不要管理员。
 日志：`%TEMP%\dsh-pack-install-*.log`。
 
 ### 安装器参数（调试/自动化）
@@ -58,151 +114,63 @@
 --help               显示帮助
 ```
 
-## 效果演示（虚构对话）
-
-> 对话与角色均为虚构，仅用于演示「自动配图」流程；图片由本地 SDXL 生成（生图后端可替换）。
-
-![示例对话](docs/showcase/demo-chat.png)
-
-| 自动生成 scene（广角） | 自动生成 closeup（近景） | 自动生成头像 |
-|---|---|---|
-| ![scene](docs/showcase/scene.jpg) | ![closeup](docs/showcase/closeup.jpg) | ![avatar](docs/showcase/avatar.jpg) |
-
-- 本例使用 `dsh-swipe-shots`：每条 AI 回复后自动出 2 张不同角度的图，并隐藏系统图片消息里的提示词文字。
-- **角色绑定**：演示图使用固定角色设定（银发主角 A + 黑发同伴 B），`scene` / `closeup` / `avatar` 保持同一角色，避免跨图人物不一致（详见 [docs/showcase/README.md](docs/showcase/README.md)）。
-- 生图后端**可选**：本地 ComfyUI（SDXL / 其它模型）、云端图片 API、或其它本地服务，见 [docs/IMAGE-BACKENDS.md](docs/IMAGE-BACKENDS.md)。
-
 ## 首次启动（开屏）没有图片
 
 整合包**不打包任何图片资源**（只分发扩展脚本 / 补丁 / 安装器，由 `scripts/check-no-images-in-payload.mjs` 校验）。
-安装的 ST 1.19.1 首次启动默认背景是透明的（`backgrounds/__transparent.png`），所以开屏是深色界面
-+ ST logo + 欢迎弹窗，**没有背景图、没有色图**：
+安装的 ST 1.19.1 首次启动默认背景是透明的（`backgrounds/__transparent.png`），所以开屏是深色界面 + ST logo + 欢迎弹窗，**没有背景图、没有色图**。
 
-| 启动 splash | 首次欢迎弹窗 |
+自查：
+
+```bash
+node scripts/check-no-images-in-payload.mjs
+node scripts/check-first-run-safe.mjs --st <你的 ST 目录>
+```
+
+### 扩展清单（14）
+
+| 扩展 | 作用 |
 |---|---|
-| ![splash](docs/showcase/first-run-splash.png) | ![first-run](docs/showcase/first-run.png) |
+| `dsh-fast-stream` | 流式输出加速 / 更顺的逐字显示 |
+| `dsh-text-semantics` | 文本语义处理与显示优化 |
+| `ui-simplify` | 精简界面、隐藏多余控件、回到底部按钮 |
+| `dsh-gen-guard` | 生成中断保护与重试 |
+| `dsh-image-fold` | 折叠/整理聊天里的图片消息 |
+| `dsh-model-config` | 模型配置面板 |
+| `dsh-gpu-queue` | 本地出图排队，避免聊天被生成卡住 |
+| `dsh-swipe-shots` | 每条回复自动出 scene + closeup |
+| `chat-namer` | 自动给聊天起可读的名字 |
+| `dsh-chat-thumbs` | 会话缩略图 |
+| `dsh-prompt-stable` | 稳定提示词、角色外观一致 |
+| `dsh-auto-avatar` | 自动生成并写回角色卡头像 |
+| `qwen-bg` | 场景判断 + 自动背景（SDXL / Anima / Krea 2 / Qwen） |
+| `dsh-vision-bridge` | 发图 → 视觉模型描述 → 文本模型回复 |
 
-- 仓库 `docs/showcase/` 里的演示图只用于 README 展示，**不会被安装到 ST**。
-- ST 官方自带的默认角色卡 / 表情图（SFW），在角色列表出现、**不在开屏上**；不需要时删除即可。
-- 安装器检测到已有 ST 时只装扩展 + 补丁，**不修改**你的背景、角色、聊天数据。
-- 复查：`node scripts/check-first-run-safe.mjs --st "<SillyTavern>"`；细节见 [docs/FIRST-RUN-SAFE.md](docs/FIRST-RUN-SAFE.md)。
+### 补丁（AGPL-3.0）
 
-## 生图后端（可选 / 可替换）
+| 补丁 | 作用 |
+|---|---|
+| `sd-angle` | 给 Stable Diffusion 扩展加镜头角度提示 |
+| `sd-stable-writer` | 稳定写入提示词，减少跨回复漂移 |
+| `util-save` | Windows 下保存失败自动重试（EPERM / EBUSY） |
 
-- **默认**：ST 内置 Stable Diffusion 扩展 + ComfyUI（SDXL）；`patches/` 全部可选，安装器 `--no-patches` 可跳过。
-- **换本地模型**：在 ComfyUI 里换 checkpoint / workflow 即可（SD1.5 / SDXL / Illustrious / Flux / Qwen-Image…），本包无需改代码。
-- **换云端 API / 其它服务**：自定义脚本覆盖 `window.__DSH_SD_ANGLE_GENERATE`，骨架见
-  [examples/cloud-image-adapter.example.js](examples/cloud-image-adapter.example.js)。
-- **不要出图**：不装出图后端时，相关扩展自动降级，聊天与其它功能不受影响。
-- 详细说明：[docs/IMAGE-BACKENDS.md](docs/IMAGE-BACKENDS.md)。
+补丁是独立文件，不属于 MIT 部分；详见 `patches/LICENSE-AGPL-3.0`。改前会备份到 `<ST>/.dsh-pack-patch-backups/<时间戳>/`，可重复运行。
 
-## 手动安装
+## 安全与边界
 
-1. 准备 **SillyTavern 1.19.x**。
-2. 把 `extensions/` 下每个文件夹复制到 `<SillyTavern>/data/default-user/extensions/`。
-3. （可选，推荐）应用补丁：`node patches/apply.mjs --st <SillyTavern 目录>`；改前自动备份，可重复运行。
-4. 刷新页面（**Ctrl+Shift+R**），在 Extensions 面板按需开启。
+- 仓库**不包含** SillyTavern 源码、聊天记录、角色卡、世界书、图片、API key。
+- 安装器只写入 ST 目录、扩展目录、桌面快捷方式和安装记录。
+- 首次启动无图片；演示图只用于 README，不随安装包分发。
+- 不附带成人内容；请遵守当地法律与 GitHub 政策。
 
-卸载：删除扩展文件夹（或整个 ST 目录）+ 桌面快捷方式；补丁备份在 `<ST>/.dsh-pack-patch-backups/`。
-
-## 包含的扩展（13 个）
-
-| 扩展目录 | 名称 | 版本 | 作用 | 额外依赖 |
-|---|---|---|---|---|
-| `dsh-fast-stream` | DSH 流式加速 | 1.0.0 | 关掉 ST 平滑流式（按 token 加延迟），刷新率拉满 | 无 |
-| `dsh-text-semantics` | DSH 文本语义配色 | 1.1.0 | 按语义给聊天正文分色（斜体=环境、对白=橙、加粗=内心、下划线=动作、等宽=系统） | 无 |
-| `ui-simplify` | 界面精简 | 2.4.0 | 加宽内容区、图标式按钮、右侧面板折叠、防自动跳底 | 无 |
-| `dsh-gen-guard` | DSH 生成看门狗 | 1.1.1 | 「生成中」卡死自动解锁，并给图片折叠提供排队信号 | 无 |
-| `dsh-image-fold` | DSH 图片折叠 | 1.2.0 | 生成图折叠成小缩略条（重绘/删除/点开大图） | SD 出图链路 |
-| `dsh-model-config` | DSH 本地模型配置 | 1.0.1 | 把记忆表格/角色卡更新用的 LLM 指向本地 Ollama，并关 thinking | 本地 Ollama（11434） |
-| `dsh-gpu-queue` | DSH 重任务排队 | 1.0.0 | 生图 / 背景图 / 本地 LLM 重任务串行 | 无 |
-| `dsh-swipe-shots` | DSH 角度配图 | 1.1.0 | 每条回复后出 2 张不同角度图 + 隐藏提示词文字 | 补丁 + ComfyUI |
-| `chat-namer` | 对话自动命名（DeepSeek） | 2.1.0 | 用 ST 模型给对话起中文标题，每 5 轮更新 | ST 模型 API |
-| `dsh-chat-thumbs` | 聊天列表（封面 + 预览） | 1.3.1 | 欢迎页聊天列表用场景插画当封面 + 预览清洗/标题整理 | 无（map.json 运行时生成） |
-| `dsh-prompt-stable` | DSH 写词稳定器 | 1.2.0 | 条件宏模板 + 全局外观核心标签 + 缓存 + 规则兜底 + 思考折叠 | 补丁（SD 写词钩子） |
-| `dsh-auto-avatar` | 自动画头像（SDXL） | 1.0.1 | 第一轮自动给首个角色画头像（可选 persona 头像） | 补丁 + ComfyUI |
-| `qwen-bg` | 背景图（先判断场景，变了才换） | 3.4.1 | 场景判断 → 出背景 → 换图/清理旧图；主页固定背景 | 补丁 + ComfyUI + 可选本地判断模型 |
-
-## 依赖与配置
-
-- **出图类**（`dsh-swipe-shots` / `dsh-image-fold` / `dsh-auto-avatar` / `qwen-bg`）：
-  需要 ST Stable Diffusion 扩展 + ComfyUI（默认 `8188`；桥接默认 `8189`，可在面板/常量改）。
-- **`chat-namer`**：用 ST 当前模型（默认 DeepSeek），请自行配置 API key。
-- **`dsh-model-config`**：默认 `http://127.0.0.1:11434` + `gemma4-e4b-ctx8k:latest`（Ollama），可改常量。
-- **`dsh-prompt-stable` v1.2.0**：面板里可配置「外观世界书名单」（逗号分隔，留空=只用角色卡/人格绑定的书）与「角色别名 JSON」。
-- **`dsh-chat-thumbs` v1.3.1**：不打包运行时生成的 `map.json`，首次使用会现场读取聊天里的【场景插画】消息。
-- **`qwen-bg` / `dsh-auto-avatar` v0.3 泛化**：ComfyUI 桥接/判断模型地址在文件顶部常量；世界书名单在面板配置；不依赖任何私有角色/书名。
-
-## 补丁（`patches/`，AGPL-3.0）
-
-`patches/` 下的脚本会修改 SillyTavern 1.19.x 源码（Stable Diffusion 扩展、`src/util.js` 等），
-这些脚本与生成物以 **AGPL-3.0** 发布（全文 `patches/LICENSE-AGPL-3.0`）；扩展本身仍是 MIT。
+## 开发
 
 ```bash
-# 查看补丁状态 / 应用 / 撤销（撤销=用备份覆盖）
-node patches/apply.mjs --st "<SillyTavern>" --list
-node patches/apply.mjs --st "<SillyTavern>" --check
-node patches/apply.mjs --st "<SillyTavern>"
+node scripts/scan-sensitive.mjs          # 发布前扫描
+node scripts/check-no-images-in-payload.mjs
+node scripts/check-first-run-safe.mjs --st <ST>
+node tools/build-installer.mjs           # 重新打包 dist/*.cmd
 ```
 
-默认应用 `sd-angle`（角度配图接口）、`sd-stable-writer`（写词稳定器钩子）、`util-save`（聊天保存修复）等；
-安装器会自动调用。**未打补丁时**：扩展照常加载，但 `dsh-swipe-shots` 角度图与写词钩子不生效。
+## License
 
-## 不包含的内容
-
-- 成人向扩展（`adult-defaults`）与角色专属扩展（`narrator-lore`、`sd-appearance`）不在仓库内。
-- 第三方扩展不打包，请从上游安装：
-
-| 扩展 | 上游 | 许可证 |
-|---|---|---|
-| 酒馆助手（JS-Slash-Runner） | https://github.com/N0VI028/JS-Slash-Runner | PolyForm Noncommercial 1.0.0 |
-| 角色卡自动更新（AutoCardUpdaterExtension） | https://github.com/1830488003/AutoCardUpdaterExtension | MIT |
-| 记忆增强表格（st-memory-enhancement） | https://gitee.com/muyoou/st-memory-enhancement | 未声明（不打包） |
-
-## 许可证 / 安全
-
-- 扩展与安装器：**MIT**（`LICENSE`）；补丁脚本：**AGPL-3.0**（`patches/LICENSE-AGPL-3.0`）。
-- SillyTavern 本体：AGPL-3.0，本仓库不含其源码。
-- 第三方归属见 `NOTICE`。
-- 发布前自查：`node scripts/scan-sensitive.mjs`（要求 PASS）。
-- 开屏/安装包自查：`node scripts/check-no-images-in-payload.mjs`（安装包不含图片）+
-  `node scripts/check-first-run-safe.mjs --st "<SillyTavern>"`（首次启动无背景图），均要求 PASS。
-- 发布使用**全新 Git 历史**，不要从旧目录 push。
-
-## 构建 / CI
-
-```bash
-node tools/build-installer.mjs          # 产物 dist/SillyTavern-DSH-Pack-Setup-v0.4.0.cmd
-```
-
-- `.github/workflows/ci.yml`：push/PR 时自动扫描 + 语法检查 + 构建安装包（产物仅 artifact）。
-- `.github/workflows/release.yml`：推送 `v*` tag（或手动 dispatch）时构建并创建 Release，自动附加安装包。
-- `dist/` 已被 `.gitignore` 忽略；安装包只放 Releases，不提交进仓库。
-
-## 目录结构
-
-```
-sillytavern-dsh-pack/
-├── README.md / CHANGELOG.md / LICENSE / NOTICE / .gitignore
-├── extensions/              # 13 个扩展（MIT）
-├── patches/                 # ST 补丁脚本（AGPL-3.0）+ apply.mjs
-├── installer/               # 安装器源码（bootstrap.cmd + install.ps1）
-├── tools/build-installer.mjs
-├── docs/EXTENSIONS.md / IMAGE-BACKENDS.md / FIRST-RUN-SAFE.md / showcase/
-├── examples/                # 可选后端替换示例（不随安装包分发）
-├── scripts/                 # scan-sensitive.mjs / check-no-images-in-payload.mjs / check-first-run-safe.mjs
-├── .github/workflows/       # CI + Release
-└── dist/                    # 构建产物（不提交）
-```
-
-## 已知限制
-
-- 只在 Windows 11 + Chrome 的 ST 1.19.1 上实测；安装器需要联网（ST / Node / npm）。
-- 部分扩展面向「本地 ComfyUI + Ollama」环境，纯云端环境可能用不上。
-- 不保证与未来 ST 版本兼容；升级 ST 前请备份 `data/`。
-
-## English
-
-A pack of self-built client-side extensions (14) for **SillyTavern 1.19.x**, plus a one-click Windows
-installer and optional AGPL-3.0 patches. It contains **no SillyTavern source, no user data, no adult
-content**. Extensions are MIT; patches are AGPL-3.0; see NOTICE for attribution.
+MIT（扩展与安装器）。`patches/` 为 AGPL-3.0；SillyTavern 本体为 AGPL-3.0，不在此仓库内。
