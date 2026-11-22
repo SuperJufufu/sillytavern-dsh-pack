@@ -85,6 +85,9 @@ globalThis.DSH_Vision_Bridge_Interceptor = async function (chat) {
             lastUser.mes = String(lastUser.mes || '') + '\n\n[图片内容：' + parts.join(' / ') + ']';
             lastUser.extra = lastUser.extra || {};
             lastUser.extra.dsh_vision_key = key;
+            // 描述已经给文本模型了，别再把原图塞进 prompt（文本模型不支持图片会 400）。
+            lastUser.extra.media = [];
+            lastUser.extra.inline_image = false;
             toast('✅ 已把图片描述交给文本模型', 'success');
         }
     } catch (e) {
