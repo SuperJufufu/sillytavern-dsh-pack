@@ -103,7 +103,7 @@ def frame2():
     mask = Image.new("L",(320,320),0); ImageDraw.Draw(mask).rounded_rectangle((0,0,319,319),28,fill=255)
     img.paste(av, (inner[0]+60, inner[1]+80), mask)
     d = ImageDraw.Draw(img)
-    d.text((inner[0]+420, inner[1]+95), "塞拉菲娜", font=font(F_BOLD,52), fill=TEXT)
+    d.text((inner[0]+420, inner[1]+95), "角色卡示例", font=font(F_BOLD,52), fill=TEXT)
     d.text((inner[0]+420, inner[1]+170), "银发 · 温柔 · 图书馆管理员", font=font(F_REG,26), fill=MUTED)
     for i,(k,v) in enumerate([("头像","自动更新"),("标签","角色绑定"),("一致性","跨镜头保持")]):
         y = inner[1]+245+i*90
@@ -144,7 +144,7 @@ def frame4():
     dx0 = inner[0]+920; dx1 = inner[2]
     rr(d,(dx0,inner[1],dx1,inner[3]),0,fill=(22,26,34))
     d.text((dx0+24, inner[1]+24),"角色",font=font(F_BOLD,24),fill=TEXT)
-    names = ["塞拉菲娜","米娜","旁白","Assistant"]
+    names = ["角色一","角色二","角色三","Assistant"]
     for i,n in enumerate(names):
         y = inner[1]+90+i*140
         rr(d,(dx0+20,y,dx1-20,y+118),14,fill=(30,35,46),outline=LINE)
