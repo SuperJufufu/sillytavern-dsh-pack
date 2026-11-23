@@ -1,2 +1,6 @@
 .dsh-vision-row{display:flex;gap:8px;align-items:center;margin:6px 0;flex-wrap:wrap}
 .dsh-vision-hint{opacity:.7;font-size:.9em}
+
+#leftSendForm { width: auto !important; gap: 4px; }
+#dsh-attach-image { cursor: pointer; font-size: 20px; padding: 0 6px; align-self: center; opacity: .85; }
+#dsh-attach-image:hover { opacity: 1; }
