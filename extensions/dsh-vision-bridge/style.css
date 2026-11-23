@@ -4,3 +4,14 @@
 #leftSendForm { width: auto !important; gap: 4px; }
 #dsh-attach-image { cursor: pointer; font-size: 20px; padding: 0 6px; align-self: center; opacity: .85; }
 #dsh-attach-image:hover { opacity: 1; }
+
+#dsh-vision-overlay{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:9999;display:flex;align-items:center;justify-content:center}
+.dsh-vision-modal{background:#1b1e25;border:1px solid #3a3f4b;border-radius:12px;padding:16px;width:min(760px,94vw);max-height:90vh;overflow:auto;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+.dsh-vision-head{font-weight:700;font-size:17px;margin-bottom:10px}
+.dsh-vision-count{color:#9aa4b2;font-weight:400;font-size:13px;margin-left:6px}
+.dsh-vision-thumbs{display:flex;gap:8px;overflow:auto;margin-bottom:10px}
+.dsh-vision-thumb{height:120px;border-radius:8px;border:1px solid #3a3f4b}
+#dsh-vision-text{width:100%;box-sizing:border-box;background:#12151b;color:#e8ecf1;border:1px solid #3a3f4b;border-radius:8px;padding:10px;font-size:14px;line-height:1.5}
+.dsh-vision-status{color:#9aa4b2;font-size:13px;margin:8px 0}
+.dsh-vision-actions{display:flex;justify-content:flex-end;gap:8px}
+#dsh-vision-send:disabled{opacity:.5;cursor:not-allowed}

@@ -10,6 +10,7 @@ const DEFAULTS = {
     model: 'deepseek-flash',
     prompt: '你是图像描述器。用中文描述这张图：头部、发型、面部、姿态、手臂与躯干、衣着、场景、光线、构图与镜头；若是线稿或草图，说明线条与明暗。不要数人数，不要推测人物关系或画外内容；看不清就写看不清。3-5 句，只写看见的内容。',
     maxTokens: 420,
+    autoInject: false,
 };
 
 function S() {
@@ -69,7 +70,7 @@ async function describeOne(media, hint = '') {
 
 globalThis.DSH_Vision_Bridge_Interceptor = async function (chat) {
     const s = S();
-    if (!s.enabled || !Array.isArray(chat)) return;
+    if (!s.enabled || !s.autoInject || !Array.isArray(chat)) return;
     const lastUser = [...chat].reverse().find(m => m && m.is_user && !m.is_system);
     if (!lastUser) return;
     const media = Array.isArray(lastUser.extra?.media)
@@ -117,12 +118,14 @@ function mountSettings() {
             <div class="inline-drawer-content">
                 <label class="checkbox_label"><input type="checkbox" id="dsh-vision-enabled" ${s.enabled ? 'checked' : ''}><span>发送图片时先让视觉模型描述</span></label>
                 <div class="dsh-vision-row"><span>视觉模型</span><input id="dsh-vision-model" class="text_pole" style="flex:1" value="${s.model}"></div>
-                <div class="dsh-vision-hint">描述会附在用户消息末尾的 [图片内容：…] 里，再交给当前文本模型。</div>
+                <label class="checkbox_label"><input type="checkbox" id="dsh-vision-autoinject" ${s.autoInject ? 'checked' : ''}><span>原生发图时自动把描述写进消息（不推荐，可能误导读模型）</span></label>
+                <div class="dsh-vision-hint">用输入框左侧的图片按钮发图：发送前可以修改识图描述，确认后再发。</div>
             </div>
         </div>`;
     host.append(div);
     div.querySelector('#dsh-vision-enabled').addEventListener('change', e => { s.enabled = e.target.checked; saveSettingsDebounced(); });
     div.querySelector('#dsh-vision-model').addEventListener('change', e => { s.model = e.target.value.trim() || DEFAULTS.model; saveSettingsDebounced(); });
+    div.querySelector('#dsh-vision-autoinject').addEventListener('change', e => { s.autoInject = e.target.checked; saveSettingsDebounced(); });
 }
 
 function addImageButton() {
@@ -132,67 +135,135 @@ function addImageButton() {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
+    input.multiple = true;
     input.hidden = true;
     input.id = 'dsh-attach-image-input';
     const btn = document.createElement('div');
     btn.id = 'dsh-attach-image';
     btn.className = 'fa-solid fa-image';
-    btn.title = '发送图片（视觉模型读图后回复）';
+    btn.title = '发送图片（可多选；发送前可编辑识图描述）';
     btn.style.cssText = 'cursor:pointer;font-size:20px;padding:0 10px;align-self:center;opacity:.85;';
     btn.addEventListener('click', () => input.click());
-    input.addEventListener('change', async () => {
-        const file = input.files && input.files[0];
+    input.addEventListener('change', () => {
+        const files = [...(input.files || [])];
         input.value = '';
-        if (file) {
-            try { await sendImageFile(file); }
-            catch (e) { console.warn('[vision-bridge] send image', e); toast('发图失败：' + e.message, 'error'); }
-        }
+        if (files.length) openPreview(files).catch(e => { console.warn('[vision-bridge] preview', e); toast('发图失败：' + e.message, 'error'); });
     });
     const host = document.getElementById('leftSendForm') || form;
     host.appendChild(btn);
     form.appendChild(input);
 }
 
+function closePreview() {
+    document.getElementById('dsh-vision-overlay')?.remove();
+}
+
+async function openPreview(files) {
+    closePreview();
+    const ctx = getContext();
+    const ta = document.getElementById('send_textarea');
+    const baseText = String(ta?.value || '').trim();
+    const overlay = document.createElement('div');
+    overlay.id = 'dsh-vision-overlay';
+    overlay.innerHTML = `
+        <div class="dsh-vision-modal">
+            <div class="dsh-vision-head">发送图片 <span class="dsh-vision-count"></span></div>
+            <div class="dsh-vision-thumbs"></div>
+            <textarea id="dsh-vision-text" class="text_pole" rows="6"></textarea>
+            <div class="dsh-vision-status">识别中…</div>
+            <div class="dsh-vision-actions">
+                <button id="dsh-vision-cancel" class="menu_button">取消</button>
+                <button id="dsh-vision-send" class="menu_button" disabled>发送</button>
+            </div>
+        </div>`;
+    document.body.append(overlay);
+    const textEl = overlay.querySelector('#dsh-vision-text');
+    const statusEl = overlay.querySelector('.dsh-vision-status');
+    const sendBtn = overlay.querySelector('#dsh-vision-send');
+    const thumbs = overlay.querySelector('.dsh-vision-thumbs');
+    overlay.querySelector('.dsh-vision-count').textContent = files.length > 1 ? `${files.length} 张` : '';
+    textEl.value = baseText;
+    textEl.addEventListener('input', () => { sendBtn.disabled = !textEl.value.trim() && !saved.length; });
+    overlay.querySelector('#dsh-vision-cancel').addEventListener('click', closePreview);
+
+    const saved = [];
+    const descs = [];
+    const urls = [];
+    for (const f of files) {
+        const dataUrl = await getBase64Async(await ensureImageFormatSupported(f));
+        const b64 = String(dataUrl).split(',')[1];
+        const path = await saveBase64AsFile(b64, ctx.name2, '', getFileExtension(f));
+        saved.push({ url: path, type: MEDIA_TYPE.IMAGE, title: baseText || 'image', source: MEDIA_SOURCE.UPLOAD });
+        const img = document.createElement('img');
+        img.src = dataUrl; img.className = 'dsh-vision-thumb';
+        thumbs.append(img);
+    }
+    sendBtn.disabled = false;
+    if (S().enabled) {
+        for (let i = 0; i < saved.length; i++) {
+            statusEl.textContent = `识别中 ${i + 1}/${saved.length}…`;
+            try {
+                const d = await describeOne(saved[i], baseText);
+                if (d) descs.push(saved.length > 1 ? `图${i + 1}：${d}` : d);
+            } catch (e) {
+                console.warn('[vision-bridge] describe', e);
+                statusEl.textContent = '识图失败，可手动写描述或直接发送';
+            }
+        }
+        if (descs.length) {
+            const block = '\n\n[图片内容：' + descs.join('\n') + ']';
+            textEl.value = String(textEl.value || '').trimEnd() + block;
+            statusEl.textContent = '已识别，可修改描述后再发送';
+        } else {
+            statusEl.textContent = '没有识别结果，可直接发送原图';
+        }
+    } else {
+        statusEl.textContent = '已关闭识图，直接发送原图';
+    }
+
+    sendBtn.addEventListener('click', async () => {
+        const text = String(textEl.value || '').trim();
+        if (!saved.length) return;
+        const message = {
+            name: ctx.name1,
+            is_user: true,
+            send_date: getMessageTimeStamp(),
+            mes: text,
+            extra: {
+                dsh_vision_key: saved.map(m => m.url).join('|'),
+                media: saved,
+                media_display: MEDIA_DISPLAY.GALLERY,
+                media_index: 0,
+                inline_image: true,
+            },
+        };
+        closePreview();
+        if (ta) ta.value = '';
+        ctx.chat.push(message);
+        ctx.addOneMessage(message);
+        if (typeof Generate === 'function') await Generate('normal');
+    });
+}
+
 async function sendImageFile(file) {
+    // 保留给自动化/测试：直接入队，不弹预览
     const ctx = getContext();
     const dataUrl = await getBase64Async(await ensureImageFormatSupported(file));
-    const b64 = String(dataUrl).split(',')[1];
-    const ext = getFileExtension(file);
-    const path = await saveBase64AsFile(b64, ctx.name2, '', ext);
-    const ta = document.getElementById('send_textarea');
-    const text = String(ta?.value || '').trim();
-    let visionText = '';
-    if (S().enabled) {
-        try {
-            toast('👁 视觉模型读图中…');
-            const d = await describeOne({ url: path, type: 'image' }, text);
-            if (d) visionText = '\n\n[图片内容：' + d + ']';
-        } catch (e) {
-            console.warn('[vision-bridge] describe', e);
-            toast('视觉读图失败：' + e.message, 'error');
-        }
-    }
+    const path = await saveBase64AsFile(String(dataUrl).split(',')[1], ctx.name2, '', getFileExtension(file));
     const message = {
         name: ctx.name1,
         is_user: true,
         send_date: getMessageTimeStamp(),
-        mes: text + visionText,
-        extra: {
-            dsh_vision_key: path,
-            media: [{ url: path, type: MEDIA_TYPE.IMAGE, title: text || 'image', source: MEDIA_SOURCE.UPLOAD }],
-            media_display: MEDIA_DISPLAY.GALLERY,
-            media_index: 0,
-            inline_image: true,
-        },
+        mes: '',
+        extra: { dsh_vision_key: path, media: [{ url: path, type: MEDIA_TYPE.IMAGE, source: MEDIA_SOURCE.UPLOAD }], inline_image: true },
     };
     ctx.chat.push(message);
-    const id = ctx.chat.length - 1;
-    if (ta) ta.value = '';
     ctx.addOneMessage(message);
     if (typeof Generate === 'function') await Generate('normal');
 }
 
 globalThis.__DSH_SEND_IMAGE_FILE = sendImageFile;
+globalThis.__DSH_OPEN_PREVIEW = openPreview;
 
 jQuery(async () => {
     S();
