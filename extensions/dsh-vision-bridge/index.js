@@ -8,7 +8,7 @@ const MODULE = 'dsh-vision-bridge';
 const DEFAULTS = {
     enabled: true,
     model: 'deepseek-flash',
-    prompt: '你是图像描述器。用中文具体描述这张图：人物数量与相对位置、姿态与动作、表情、发型与衣着状态、场景、光线、构图与镜头；若是线稿或草图，说明线条与明暗。3-5 句，只写看见的内容，不评价、不猜测。',
+    prompt: '你是图像描述器。用中文描述这张图：头部、发型、面部、姿态、手臂与躯干、衣着、场景、光线、构图与镜头；若是线稿或草图，说明线条与明暗。不要数人数，不要推测人物关系或画外内容；看不清就写看不清。3-5 句，只写看见的内容。',
     maxTokens: 420,
 };
 
@@ -38,8 +38,9 @@ async function urlToDataUrl(url) {
     });
 }
 
-async function describeOne(media) {
-    const prompt = S().prompt;
+async function describeOne(media, hint = '') {
+    let prompt = S().prompt;
+    if (hint) prompt += '\n用户说明：' + hint + '（请以此为准，不要添加画面里没有的人或物）';
     const dataUrl = await urlToDataUrl(media.url);
     const body = {
         chat_completion_source: 'deepseek',
@@ -164,7 +165,7 @@ async function sendImageFile(file) {
     if (S().enabled) {
         try {
             toast('👁 视觉模型读图中…');
-            const d = await describeOne({ url: path, type: 'image' });
+            const d = await describeOne({ url: path, type: 'image' }, text);
             if (d) visionText = '\n\n[图片内容：' + d + ']';
         } catch (e) {
             console.warn('[vision-bridge] describe', e);
