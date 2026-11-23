@@ -33,7 +33,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$Script:PackVersion = '0.4.4'
+$Script:PackVersion = '0.4.5'
 $Script:LogPath = Join-Path $env:TEMP ("dsh-pack-install-" + (Get-Date -Format 'yyyyMMdd-HHmmss') + ".log")
 $Script:NoWrite = [bool]$DryRun
 $global:InstallerExitCode = 0

@@ -1,9 +1,9 @@
 {
     "display_name": "视觉读图（图片自动描述给文本模型）",
     "name": "dsh-vision-bridge",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "author": "DSH",
-    "description": "聊天输入框旁新增「发送图片」按钮：选图后先用视觉模型读图，把客观描述附在用户消息里，再交给当前文本模型回复。可开关、可改视觉模型。",
+    "description": "聊天输入框旁新增「发送图片」按钮：选图后先用视觉模型（默认 deepseek-flash）读图，把客观描述附在用户消息里，再交给当前文本模型回复。可开关、可改视觉模型。",
     "js": "index.js",
     "css": "style.css",
     "loading_order": 120,

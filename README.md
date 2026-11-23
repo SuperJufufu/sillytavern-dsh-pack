@@ -25,7 +25,7 @@
 
 ## Install (Windows)
 
-1. Open **[Releases](https://github.com/SuperJufufu/sillytavern-dsh-pack/releases)** and download `SillyTavern-DSH-Pack-Setup-v0.4.4.cmd` (~625 KB).
+1. Open **[Releases](https://github.com/SuperJufufu/sillytavern-dsh-pack/releases)** and download `SillyTavern-DSH-Pack-Setup-v0.4.5.cmd` (~625 KB).
 2. Double-click it. If Windows SmartScreen appears, choose **More info → Run anyway**.
 3. The installer will:
    - detect an existing **SillyTavern 1.19.1** and reuse it, or download the 1.19.1 source zip (~37 MB) when none is found;
@@ -71,7 +71,7 @@ Nothing else is touched: no system changes, no admin rights, no user data in thi
 
 ## 一键安装
 
-1. 打开 **[Releases](https://github.com/SuperJufufu/sillytavern-dsh-pack/releases)**，下载 `SillyTavern-DSH-Pack-Setup-v0.4.4.cmd`（约 625 KB）；
+1. 打开 **[Releases](https://github.com/SuperJufufu/sillytavern-dsh-pack/releases)**，下载 `SillyTavern-DSH-Pack-Setup-v0.4.5.cmd`（约 625 KB）；
 2. **双击**运行（若出现「Windows 已保护你的电脑」→ 更多信息 → 仍要运行）；
 3. 安装器自动：
    - **检测本机是否已有 SillyTavern 1.19.1**：有就跳过下载本体；

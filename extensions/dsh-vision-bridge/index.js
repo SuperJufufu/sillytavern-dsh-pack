@@ -7,9 +7,9 @@ import { getMessageTimeStamp } from '../../../RossAscends-mods.js';
 const MODULE = 'dsh-vision-bridge';
 const DEFAULTS = {
     enabled: true,
-    model: 'deepseek-v4-flash-vision-exp',
-    prompt: '你是图像描述器。用中文客观描述这张图：画面里的人物（人数、发型、衣着、动作）、场景、光线与镜头。2-4 句，只写看见的内容，不评价、不猜测。',
-    maxTokens: 320,
+    model: 'deepseek-flash',
+    prompt: '你是图像描述器。用中文具体描述这张图：人物数量与相对位置、姿态与动作、表情、发型与衣着状态、场景、光线、构图与镜头；若是线稿或草图，说明线条与明暗。3-5 句，只写看见的内容，不评价、不猜测。',
+    maxTokens: 420,
 };
 
 function S() {
@@ -187,7 +187,6 @@ async function sendImageFile(file) {
     ctx.chat.push(message);
     const id = ctx.chat.length - 1;
     if (ta) ta.value = '';
-    await ctx.saveChat();
     ctx.addOneMessage(message);
     if (typeof Generate === 'function') await Generate('normal');
 }
