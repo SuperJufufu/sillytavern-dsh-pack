@@ -1,0 +1,12 @@
+{
+  "display_name": "联网搜索（Web）",
+  "loading_order": 220,
+  "requires": [],
+  "optional": [],
+  "js": "index.js",
+  "css": "style.css",
+  "author": "DSH",
+  "version": "1.0.0",
+  "homePage": "https://github.com/SuperJufufu/sillytavern-dsh-pack",
+  "description": "给聊天加联网能力：/web 查询词 搜索并抓取网页，把资料注入本轮提示词；/read URL 读取单页。输入框左侧也有地球按钮。"
+}

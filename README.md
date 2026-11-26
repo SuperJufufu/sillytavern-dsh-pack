@@ -30,7 +30,7 @@
 3. The installer will:
    - detect an existing **SillyTavern 1.19.1** and reuse it, or download the 1.19.1 source zip (~37 MB) when none is found;
    - check Node.js ≥ 20 and download a portable Node if needed;
-   - install **14 extensions** into `<ST>/data/default-user/extensions/`;
+   - install **15 extensions** into `<ST>/data/default-user/extensions/`;
    - apply three small **AGPL-3.0 patches** (backed up first, idempotent, `--no-patches` to skip);
    - run `npm install --omit=dev`, create a desktop shortcut, and write an install record.
 4. Launch **SillyTavern DSH** from the desktop. The first start seeds `data/` with all extensions enabled.
@@ -51,7 +51,7 @@ Nothing else is touched: no system changes, no admin rights, no user data in thi
 
 > 以下中文为人工撰写；浏览器自动翻译可能失真，以本段为准。
 
-**一键把原版 SillyTavern 变成能看图、能出图、会自己换背景的本地角色扮演工作台。** 安装器负责检测/下载 SillyTavern 1.19.1、安装 14 个扩展、打 3 个补丁、装依赖、建快捷方式；仓库里不放任何用户数据、图片或密钥。
+**一键把原版 SillyTavern 变成能看图、能出图、会自己换背景的本地角色扮演工作台。** 安装器负责检测/下载 SillyTavern 1.19.1、安装 15 个扩展、打 3 个补丁、装依赖、建快捷方式；仓库里不放任何用户数据、图片或密钥。
 
 <p align="center">
   <img src="docs/showcase/carousel/01.png" alt="对话时自动生图" width="820">
@@ -77,11 +77,12 @@ Nothing else is touched: no system changes, no admin rights, no user data in thi
    - **检测本机是否已有 SillyTavern 1.19.1**：有就跳过下载本体；
    - 没有就下载 ST 1.19.1 源码包（GitHub tag，约 37 MB）并解压；
    - 检测 Node.js（ST 1.19 要求 ≥ 20），没有就下载便携版（免管理员）；
-   - 安装 **14 个扩展**（含 `dsh-vision-bridge`：发图→视觉模型描述→文本模型回复）到 `<ST>/data/default-user/extensions/`；
+   - 安装 **15 个扩展**（含 `dsh-vision-bridge` 发图识图、`dsh-web` 联网搜索）到 `<ST>/data/default-user/extensions/`；
    - 应用 **ST 补丁**（`patches/`，AGPL-3.0；改前自动备份；`--no-patches` 可跳过）；
    - `npm install --omit=dev`（与 ST 自带 Start.bat 一致）；
    - 创建桌面快捷方式、写安装记录。
 4. 双击桌面「SillyTavern DSH」启动；首次启动初始化 `data` 并带上全部扩展。
+5. （可选）联网搜索：`node tools/web-bridge/server.mjs` 启动本地桥，详见 `docs/WEB-SEARCH.md`。
 
 ### 安装器行为
 
@@ -130,7 +131,7 @@ node scripts/check-no-images-in-payload.mjs
 node scripts/check-first-run-safe.mjs --st <你的 ST 目录>
 ```
 
-### 扩展清单（14）
+### 扩展清单（15）
 
 | 扩展 | 作用 |
 |---|---|
@@ -148,6 +149,7 @@ node scripts/check-first-run-safe.mjs --st <你的 ST 目录>
 | `dsh-auto-avatar` | 自动生成并写回角色卡头像 |
 | `qwen-bg` | 场景判断 + 自动背景（SDXL / Anima / Krea 2 / Qwen） |
 | `dsh-vision-bridge` | 发图 → 视觉模型描述 → 文本模型回复 |
+| `dsh-web` | 联网搜索（需另起 `tools/web-bridge`，见 `docs/WEB-SEARCH.md`） |
 
 ### 补丁（AGPL-3.0）
 

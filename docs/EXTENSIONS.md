@@ -105,3 +105,13 @@
 | （所有扩展） | `util-save` | 聊天保存偶发 EPERM 修复，提升稳定性 |
 
 其余补丁（quick-reply / deepseek-reasoning）如存在，默认是否应用以 `patches/apply.mjs --list` 为准。
+
+## 14. dsh-web（联网搜索）v1.0.0
+
+输入框左侧地球按钮 / `/web 查询词` / `/read 网址`：搜索 Bing RSS、抓取前几页正文，作为 system note 注入本轮提示词再生成。需要另起本地桥：
+
+```bash
+node tools/web-bridge/server.mjs   # 127.0.0.1:8796
+```
+
+详见 `docs/WEB-SEARCH.md`。

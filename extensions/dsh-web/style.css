@@ -1,0 +1,10 @@
+#dsh-web-btn{background:transparent;border:0;color:var(--SmartThemeBodyColor,#ddd);cursor:pointer;padding:4px 6px;font-size:16px;opacity:.75;}
+#dsh-web-btn:hover{opacity:1;}
+#dsh-web-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;}
+#dsh-web-modal .dsh-web-card{width:min(560px,92vw);background:var(--SmartThemeBlurTintColor,#1d1f26);border:1px solid var(--SmartThemeBorderColor,#555);border-radius:14px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+#dsh-web-modal .dsh-web-title{font-size:17px;margin-bottom:10px;}
+#dsh-web-modal input{width:100%;box-sizing:border-box;padding:10px;border-radius:8px;border:1px solid #555;background:#11141a;color:#eee;}
+#dsh-web-modal .dsh-web-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+#dsh-web-modal .dsh-web-hint{margin-top:8px;font-size:12px;opacity:.6;}
+.dsh-web-settings{display:flex;flex-direction:column;gap:8px;}
+.dsh-web-settings label{display:flex;align-items:center;gap:8px;justify-content:space-between;}
