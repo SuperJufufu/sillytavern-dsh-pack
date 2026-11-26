@@ -149,7 +149,7 @@ node scripts/check-first-run-safe.mjs --st <你的 ST 目录>
 | `dsh-auto-avatar` | 自动生成并写回角色卡头像 |
 | `qwen-bg` | 场景判断 + 自动背景（SDXL / Anima / Krea 2 / Qwen） |
 | `dsh-vision-bridge` | 发图 → 视觉模型描述 → 文本模型回复 |
-| `dsh-web` | 联网搜索（需另起 `tools/web-bridge`，见 `docs/WEB-SEARCH.md`） |
+| `dsh-web` | 联网搜索，弹窗内总结（需另起 `tools/web-bridge`，见 `docs/WEB-SEARCH.md`） |
 
 ### 补丁（AGPL-3.0）
 
