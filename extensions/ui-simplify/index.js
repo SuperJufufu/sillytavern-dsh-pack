@@ -403,15 +403,19 @@ body.${WIDE_CLASS} .fillRight.openDrawer {
         style.id = 'dsh-scroll-bottom-style';
         style.textContent = `
             #dsh-scroll-bottom{
-                position:fixed;right:max(2px,calc(2.5vw - 38px));width:36px;height:36px;border-radius:50%;
+                position:fixed;right:max(8px,calc(2.5vw - 34px));width:38px;height:38px;border-radius:50%;
                 display:none;align-items:center;justify-content:center;
-                background:var(--SmartThemeBlurTintColor,rgba(30,30,40,.85));
-                border:1px solid var(--SmartThemeBorderColor,rgba(255,255,255,.2));
+                background:var(--SmartThemeBlurTintColor,rgba(30,30,40,.9));
+                border:1px solid var(--SmartThemeBorderColor,rgba(255,255,255,.22));
                 color:var(--SmartThemeBodyColor,#eee);font-size:15px;cursor:pointer;
-                z-index:45;opacity:.78;transition:opacity .15s,transform .15s;
-                box-shadow:0 2px 10px rgba(0,0,0,.35);
+                z-index:60;opacity:.82;transition:opacity .15s,transform .15s;
+                box-shadow:0 2px 10px rgba(0,0,0,.4);touch-action:manipulation;
             }
             #dsh-scroll-bottom:hover{opacity:1;transform:translateY(-1px);}
+            #chat{padding-right:52px;}
+            @media (max-width: 600px){
+                #dsh-scroll-bottom{right:10px;width:40px;height:40px;font-size:16px;opacity:.92;}
+            }
         `;
         document.head.appendChild(style);
         const btn = document.createElement('button');
@@ -421,22 +425,38 @@ body.${WIDE_CLASS} .fillRight.openDrawer {
         btn.innerHTML = '<i class="fa-solid fa-arrow-down"></i>';
         document.body.appendChild(btn);
 
+        const scroller = () => {
+            const doc = document.scrollingElement || document.documentElement;
+            const cands = [
+                { el: chatEl, dist: chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight },
+                { el: doc, dist: doc.scrollHeight - (window.scrollY || doc.scrollTop || 0) - window.innerHeight },
+            ];
+            cands.sort((a, b) => b.dist - a.dist);
+            return cands[0].dist > 8 ? cands[0] : { el: chatEl, dist: 0 };
+        };
         const place = () => {
             const r = form.getBoundingClientRect();
-            btn.style.bottom = Math.max(8, window.innerHeight - r.top + 10) + 'px';
+            const vh = window.innerHeight || document.documentElement.clientHeight;
+            const bh = btn.offsetHeight || 42;
+            let top = (r.height && r.top > 0 && r.top < vh) ? (r.top - bh - 10) : (vh - bh - 92);
+            top = Math.min(Math.max(8, top), Math.max(8, vh - bh - 8));
+            btn.style.top = top + 'px';
+            btn.style.bottom = 'auto';
         };
         const refresh = () => {
-            const dist = chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight;
+            const { dist } = scroller();
             btn.style.display = dist > 160 ? 'flex' : 'none';
             place();
         };
         btn.addEventListener('click', (e) => {
             e.preventDefault(); e.stopPropagation();
             if (typeof chatEl.__dshJumpToBottom === 'function') chatEl.__dshJumpToBottom();
-            else chatEl.scrollTop = chatEl.scrollHeight;
+            chatEl.scrollTop = chatEl.scrollHeight;
+            window.scrollTo(0, document.documentElement.scrollHeight);
             refresh();
         });
         chatEl.addEventListener('scroll', refresh, { passive: true });
+        window.addEventListener('scroll', refresh, { passive: true });
         window.addEventListener('resize', refresh);
         setInterval(refresh, 1500);
         refresh();
