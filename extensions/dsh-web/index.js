@@ -1,5 +1,5 @@
 import { extension_settings, getContext } from '../../../extensions.js';
-import { event_types, eventSource, extension_prompt_types, extension_prompt_roles, setExtensionPrompt, Generate, saveSettingsDebounced } from '../../../../script.js';
+import { event_types, eventSource, extension_prompt_types, extension_prompt_roles, setExtensionPrompt, Generate, saveSettingsDebounced, getRequestHeaders } from '../../../../script.js';
 import { SlashCommand } from '../../../slash-commands/SlashCommand.js';
 import { SlashCommandParser } from '../../../slash-commands/SlashCommandParser.js';
 
@@ -18,6 +18,29 @@ async function api(path){
     return await r.json();
 }
 
+async function summarize(query, results, pages){
+    let ctx='';
+    results.forEach((it,i)=>{ ctx+=`[${i+1}] ${it.title}\n${it.url}\n${it.snippet||''}\n\n`; });
+    pages.forEach((p,i)=>{ ctx+=`【网页${i+1}】${p.title||''} ${p.url}\n${(p.text||'').slice(0,4000)}\n\n`; });
+    if(ctx.length>14000) ctx=ctx.slice(0,14000)+'\n…（截断）';
+    const body={chat_completion_source:'deepseek',model:'deepseek-flash',temperature:0.2,max_tokens:900,messages:[
+        {role:'system',content:'你是搜索助手。只根据给出的网页资料回答；先给 3-6 句结论，再列 1-3 条来源（标题+链接）。资料不足就直说，不要编，不要扮演角色，不要续写剧情。'},
+        {role:'user',content:`问题：${query}\n\n资料：\n${ctx}`}
+    ]};
+    const r=await fetch('/api/backends/chat-completions/generate',{method:'POST',headers:getRequestHeaders(),body:JSON.stringify(body)});
+    if(!r.ok) throw new Error('summary '+r.status+' '+await r.text().catch(()=>''));
+    const j=await r.json();
+    if(j.error) throw new Error(j.error.message||JSON.stringify(j.error));
+    return (j.choices?.[0]?.message?.content||'').trim();
+}
+
+function renderAnswer(el, text){
+    const box=el.querySelector('#dsh-web-answer');
+    box.textContent=text||'（没有返回内容）';
+    box.classList.add('show');
+    const ins=el.querySelector('#dsh-web-insert'); if(ins && text) ins.style.display='inline-block';
+}
+
 function buildNote(query, results, pages){
     let out=`[系统指令] 用户本轮发起联网搜索，请优先依据以下资料直接回答，不要续写角色剧情；资料不足就说明不足。\n\n[联网资料 · 查询：${query}]\n`;
     results.forEach((it,i)=>{ out+=`${i+1}. ${it.title}\n   ${it.url}\n   ${it.snippet}\n`; });
@@ -33,41 +56,57 @@ function inject(text){
 }
 function clear(){ try{ setExtensionPrompt(injectedKey, '', extension_prompt_types.IN_CHAT, 0); }catch(e){} }
 
-async function runSearch(query){
+async function runSearch(query, ui){
     query=String(query||'').trim(); if(!query) return toast('先输入要搜什么','warning');
+    if(ui?.status){ ui.status.textContent='正在搜索：'+query; ui.status.classList.add('show'); }
     toast('正在搜索：'+query);
     try{
         const data=await api('/search?n='+encodeURIComponent(S().maxResults)+'&q='+encodeURIComponent(query));
         const results=data.results||[];
-        if(!results.length) return toast('没有搜到结果','warning');
+        if(!results.length) throw new Error('没有搜到结果');
         const pages=[];
         for(const it of results.slice(0, S().readPages)){
             try{ pages.push(await api('/read?url='+encodeURIComponent(it.url))); }catch(e){ console.warn('read fail',it.url,e); }
         }
-        const note=buildNote(query, results, pages);
-        inject(note);
         window.__DSH_WEB_LAST={query, results, pages, at:Date.now()};
+        if(ui?.status) ui.status.textContent=`找到 ${results.length} 条，抓取 ${pages.length} 页，正在用 deepseek-flash 总结…`;
+        if(ui){
+            const answer=await summarize(query, results, pages);
+            renderAnswer(ui.el, answer);
+            if(ui.status) ui.status.textContent=`已总结 · ${results.length} 条结果 / ${pages.length} 页`;
+            return;
+        }
+        // slash / non-modal: 保留原行为，注入后让角色结合资料回复
+        inject(buildNote(query, results, pages));
         toast(`找到 ${results.length} 条，抓取 ${pages.length} 页，正在让 AI 结合资料回复…`,'success');
         if(S().autoGenerate){
             eventSource.once(event_types.GENERATION_ENDED, ()=>clear());
             await Generate('normal');
         }
-    }catch(e){ console.error(e); toast('搜索失败：'+e.message,'error'); }
+    }catch(e){ console.error(e); toast('搜索失败：'+e.message,'error'); if(ui?.status){ ui.status.textContent='失败：'+e.message; ui.status.classList.add('show'); } }
 }
 
-async function runRead(url){
+async function runRead(url, ui){
     url=String(url||'').trim(); if(!url) return toast('先输入网址','warning');
+    if(ui?.status){ ui.status.textContent='正在读取：'+url; ui.status.classList.add('show'); }
     toast('正在读取：'+url);
     try{
         const p=await api('/read?url='+encodeURIComponent(url));
-        inject(`[联网资料 · 单页]\n${p.title||''}\n${p.url}\n${(p.text||'').slice(0,8000)}\n（外部网页内容，可能不准确。）`);
         window.__DSH_WEB_LAST={url, page:p, at:Date.now()};
+        if(ui){
+            if(ui.status) ui.status.textContent='已抓取，正在用 deepseek-flash 总结…';
+            const answer=await summarize(url, [], [p]);
+            renderAnswer(ui.el, answer);
+            if(ui.status) ui.status.textContent='已总结 · 1 页';
+            return;
+        }
+        inject(`[联网资料 · 单页]\n${p.title||''}\n${p.url}\n${(p.text||'').slice(0,8000)}\n（外部网页内容，可能不准确。）`);
         toast('已读取，正在让 AI 结合资料回复…','success');
         if(S().autoGenerate){
             eventSource.once(event_types.GENERATION_ENDED, ()=>clear());
             await Generate('normal');
         }
-    }catch(e){ console.error(e); toast('读取失败：'+e.message,'error'); }
+    }catch(e){ console.error(e); toast('读取失败：'+e.message,'error'); if(ui?.status){ ui.status.textContent='失败：'+e.message; ui.status.classList.add('show'); } }
 }
 
 function modal(){
@@ -78,19 +117,24 @@ function modal(){
         <div class="dsh-web-title">🌐 联网搜索</div>
         <input id="dsh-web-q" type="text" placeholder="搜索词，或粘贴网址" />
         <div class="dsh-web-row">
-            <button id="dsh-web-search" class="menu_button">搜索并回复</button>
+            <button id="dsh-web-search" class="menu_button">搜索并总结</button>
             <button id="dsh-web-read" class="menu_button">只读网址</button>
+            <button id="dsh-web-insert" class="menu_button" style="display:none">插入输入框</button>
             <button id="dsh-web-close" class="menu_button">关闭</button>
         </div>
-        <div class="dsh-web-hint">/web 查询词 · /read 网址 · 结果会注入本轮提示词</div>
+        <div id="dsh-web-status" class="dsh-web-status"></div>
+        <div id="dsh-web-answer" class="dsh-web-answer"></div>
+        <div class="dsh-web-hint">总结用 deepseek-flash；不触发角色，不写入聊天</div>
     </div>`;
     document.body.appendChild(el);
     const q=el.querySelector('#dsh-web-q');
     q.focus();
     el.querySelector('#dsh-web-close').onclick=()=>el.remove();
-    el.querySelector('#dsh-web-search').onclick=()=>{ const v=q.value; el.remove(); runSearch(v); };
-    el.querySelector('#dsh-web-read').onclick=()=>{ const v=q.value; el.remove(); runRead(v); };
-    q.addEventListener('keydown',e=>{ if(e.key==='Enter'){ const v=q.value; el.remove(); runSearch(v); } if(e.key==='Escape') el.remove(); });
+    const ui={el, status:el.querySelector('#dsh-web-status')};
+    el.querySelector('#dsh-web-search').onclick=()=>runSearch(q.value, ui);
+    el.querySelector('#dsh-web-read').onclick=()=>runRead(q.value, ui);
+    el.querySelector('#dsh-web-insert').onclick=()=>{ const t=el.querySelector('#dsh-web-answer').textContent; const ta=document.getElementById('send_textarea'); if(ta){ ta.value=t; ta.dispatchEvent(new Event('input',{bubbles:true})); } el.remove(); };
+    q.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); runSearch(q.value, ui); } if(e.key==='Escape') el.remove(); });
 }
 
 function addButton(){
