@@ -8,7 +8,7 @@
  *   · AI 回复渲染后（对话早期的第 1~6 条 AI 消息内命名一次）
  *   · 打开一个还没有被自动命名过的旧对话时补命名（可选，默认开）
  *   · 之后每 N 轮对话（默认 5 条 AI 回复）自动更新一次标题，反映最新剧情
- * 只改「默认时间戳名」的对话（`角色名 - 2026-10-25@00h33m11s` 这种）；
+ * 只改「默认时间戳名」的对话（`旁白 - 2026-10-25@00h33m11s` 这种）；
  * 你手动改过名的一律不动，并且会永久停止自动更新这一段（chat_metadata.__dsh_manual）。
  *
  * 删掉 extensions/chat-namer 即可移除。
@@ -50,13 +50,39 @@
     const BAD_WORDS_G = new RegExp(BAD_WORDS.source, 'g');
 
     // 默认聊天名：`角色名 - 2026-10-25@00h33m11s` / 群聊同名格式
-    const DEFAULT_NAME_RE = /[-–—]\s*\d{4}-\d{1,2}-\d{1,2}@\d{2}h\d{2}m\d{2}s(?:\.\d+ms)?$/;
+    const DEFAULT_NAME_RE = /[-–—]\s*\d{4}-\d{1,2}-\d{1,2}@\d{2}h\d{2}m\d{2}s(?:\.?\d+ms)?$/;
     const LEGACY_DEFAULT_RE = /^(新的对话|New Chat|Untitled)$/i;
 
     let busy = false;
     let pendingImages = 0;
 
     const ctx = () => window.SillyTavern.getContext();
+
+    // 2026-11-26：本扩展的所有 LLM 调用统一改走官方 DeepSeek 的 deepseek-flash。
+    // 主模型（对话）保持 deepseek-v4-pro 不动；只有在调用期间临时切换，finally 里还原。
+    function flashify(c) {
+        if (!c || typeof c !== 'object' || c.__dshFlashApplied) return c;
+        const wrap = (name) => {
+            const orig = c[name];
+            if (typeof orig !== 'function') return;
+            c[name] = async function (args) {
+                const oai = c.chatCompletionSettings || null;
+                const prev = oai ? oai.deepseek_model : undefined;
+                if (oai) oai.deepseek_model = 'deepseek-flash';
+                try { return await orig.call(c, args); }
+                finally {
+                    if (oai) {
+                        if (prev === undefined) delete oai.deepseek_model;
+                        else oai.deepseek_model = prev;
+                    }
+                }
+            };
+        };
+        wrap('generateRaw');
+        wrap('generateQuietPrompt');
+        c.__dshFlashApplied = true;
+        return c;
+    }
 
     // ---------- 出图/生成进行中就别改名（改名会重载聊天，正在生成的图会被丢弃） ----------
     (function hookFetch() {
@@ -106,7 +132,7 @@
     }
 
     function settings() {
-        const c = ctx();
+        const c = flashify(ctx());
         if (!c.extensionSettings[MODULE] || typeof c.extensionSettings[MODULE] !== 'object') {
             c.extensionSettings[MODULE] = {};
         }
@@ -129,7 +155,7 @@
     }
 
     function currentTitle() {
-        const c = ctx();
+        const c = flashify(ctx());
         return String(c.chatId || '');
     }
 
@@ -147,7 +173,7 @@
     }
 
     function maskedLines(n) {
-        const c = ctx();
+        const c = flashify(ctx());
         const chat = c.chat || [];
         return chat
             .filter((m) => !m.is_system && String(m.mes || '').trim())
@@ -176,7 +202,7 @@
     // ---------------------------------------------------------------- 标题生成 --
     /** DeepSeek（主模型）起名：走 generateRaw，和聊天用的是同一个 API */
     async function askTitleMain(strict, mode) {
-        const c = ctx();
+        const c = flashify(ctx());
         if (typeof c.generateRaw !== 'function') throw new Error('当前环境没有 generateRaw');
         const update = mode === 'update';
         const lines = maskedLines(update ? 10 : 6);
@@ -189,15 +215,29 @@
         let lastErr = null;
         for (let attempt = 1; attempt <= 3; attempt++) {
             try {
-                const raw = await Promise.race([
-                    c.generateRaw({
-                        prompt,
-                        systemPrompt: SYSTEM,
-                        responseLength: 200,
-                        quietToLoud: true,
-                    }),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('DeepSeek 起名超时 45s')), 45000)),
-                ]);
+                // 起标题是纯格式化活儿：deepseek-flash 默认会思考，reasoning 会把 200 token 预算吃光
+                // 变成空标题，所以这一调用显式关思考（与对话正文一致）。
+                const oai = c.chatCompletionSettings || null;
+                const prevEffort = oai ? oai.reasoning_effort : undefined;
+                const prevShow = oai ? oai.show_thoughts : undefined;
+                if (oai) { oai.reasoning_effort = 'min'; oai.show_thoughts = false; }
+                let raw;
+                try {
+                    raw = await Promise.race([
+                        c.generateRaw({
+                            prompt,
+                            systemPrompt: SYSTEM,
+                            responseLength: 300,
+                            quietToLoud: true,
+                        }),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('DeepSeek 起名超时 45s')), 45000)),
+                    ]);
+                } finally {
+                    if (oai) {
+                        if (prevEffort === undefined) delete oai.reasoning_effort; else oai.reasoning_effort = prevEffort;
+                        if (prevShow === undefined) delete oai.show_thoughts; else oai.show_thoughts = prevShow;
+                    }
+                }
                 const title = sanitize(raw);
                 if (title && title.length >= 2) return title;
                 throw new Error('主模型返回空标题');
@@ -268,7 +308,7 @@
 
     /** 兜底标题：角色名 + 场景词（避免用"新的对话"这种废名字） */
     function fallbackTitle() {
-        const c = ctx();
+        const c = flashify(ctx());
         const chat = c.chat || [];
         const text = chat.map((m) => String(m.mes || '')).join('\n');
         const locs = ['草原', '森林', '酒馆', '卧房', '卧室', '城堡', '王都', '小巷', '海边', '洞穴', '雪原', '沙漠', '教室', '办公室', '庭院', '湖边', '山道', '集市', '篝火', '地下', '公馆', '地下室'];
@@ -288,11 +328,11 @@
         if (busy) return;
         const s = settings();
         if (!s.enabled && !force) return;
-        const c = ctx();
+        const c = flashify(ctx());
         if (document.querySelector('.welcomePanel')) return;
         if (!c.chatId && !c.groupId && !String(c.name2 || '').trim()) return;
         const md = c.chatMetadata || {};
-        if (md[MARK] && !force) return;
+        if (md[MARK] && !force && !looksDefaultName(currentTitle())) return;
 
         const title0 = currentTitle();
         if (!title0) { status('当前没有打开的聊天'); return; }
@@ -383,7 +423,7 @@
         if (!s.enabled) return;
         const everyN = Math.max(0, Number(s.updateEveryN) || 0);
         if (!everyN) return;
-        const c = ctx();
+        const c = flashify(ctx());
         if (document.querySelector('.welcomePanel')) return;
         const title = currentTitle();
         if (!title) return;
@@ -570,7 +610,7 @@
     jQuery(async () => {
         await new Promise((r) => setTimeout(r, 3000));
         try {
-            const c = ctx();
+            const c = flashify(ctx());
             c.eventSource.on(c.eventTypes.CHARACTER_MESSAGE_RENDERED, () => {
                 setTimeout(() => nameChat(false, 'new reply'), 1500);
                 // 每 N 轮更新一次标题（nameChat 里会先处理"还没名字"的情况）
